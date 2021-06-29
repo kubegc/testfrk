@@ -9,11 +9,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -27,14 +29,16 @@ import io.github.newhero.utils.JavaUtil;
  */
 public class Analyzer {
 
-    protected Map<String, List<String>> classToUrl = new HashMap<>();
+	protected Map<String, Class<?>>     fullnameToClass    = new HashMap<>();
+	
+	protected Map<String, List<String>> fullnameToUrlGroup = new HashMap<>();
 
-    protected Map<String, String> urlToMethod = new HashMap<>();
+	protected Map<String, Method>       urlToMethod        = new HashMap<>();
 
-    protected Map<String, ObjectNode> urlToJson = new HashMap<>();
+	protected Map<String, ObjectNode>   urlToJson          = new HashMap<>();
 
-    protected final String pkgName;
-    
+	protected final String pkgName;
+
 	public Analyzer(String pkgName) {
 		super();
 		this.pkgName = pkgName;
@@ -43,76 +47,179 @@ public class Analyzer {
 	public void start() throws Exception {
 		doStart(RequestMapping.class);
 	}
-	
-	public void start(Class<? extends Annotation> classAnnotation) throws Exception {
-		doStart(classAnnotation);
-	}
-	
+
 	@SuppressWarnings("unchecked")
-	void doStart(Class<? extends Annotation> classAnnotation) throws Exception {
-		// find all Controller
-        for (Class<?> clz : ClassUtil.scan(pkgName, classAnnotation)) {
-            
-        	RequestMapping crm = clz.getAnnotation(RequestMapping.class);
-            String url = crm.value()[0];
+	void doStart(Class<? extends Annotation> requestMappingAnnotation) throws Exception {
 
-            // find all http services
-            for (Method m : clz.getDeclaredMethods()) {
-                RequestMapping mrm = m.getAnnotation(RequestMapping.class);
-                if (mrm == null) {
-                    continue;
-                }
+		// find all (controller) classes
+		for (Class<?> aClass : ClassUtil.scan(pkgName, requestMappingAnnotation)) {
+			fullnameToClass.put(aClass.getName(), aClass);
 
-                addUrlToClass(clz.getSimpleName(), url + mrm.value()[0]);
-                urlToMethod.put(url + mrm.value()[0], m.getName()) ;
+			// find all methods exported as HttpServices
+			for (Method aMethod : getMethodsWithRequestMapping(aClass)) {
 
-                // find all parameters without HttpServletResponse and HttpServletRequest
-                if (m.getParameterCount() != 0) {
-                    ObjectNode paramNode = new ObjectMapper().createObjectNode();
-                    for (Parameter p : m.getParameters()) {
-                        if (p.getParameterizedType().getTypeName().startsWith("javax.servlet.http")) {
-                            continue;
-                        }
-                        String typeName = p.getParameterizedType().getTypeName();
-                        if (JavaUtil.isPrimitive(typeName)) {
-                            paramNode.put(p.getName(), typeName);
-                        } else {
-                            if (!typeName.contains("<")) {
-                                for (Field f : Class.forName(typeName).getDeclaredFields()) {
-                                    paramNode.put(f.getName(), f.getGenericType().getTypeName());
-                                }
-                             } else {
-
-                                int idx = typeName.indexOf("<");
-                                String genericClass = typeName.substring(0, idx);
-                                String realClass = typeName.substring(idx + 1, typeName.length() - 1);
-                                for (Field f : Class.forName(genericClass).getDeclaredFields()) {
-                                    if (f.getGenericType().getTypeName().equals("T")) {
-                                        ObjectNode subNode = new ObjectMapper().createObjectNode();
-                                        for (Field sf : Class.forName(realClass).getDeclaredFields()) {
-                                            subNode.put(sf.getName(), sf.getGenericType().getTypeName());
-                                        }
-                                        paramNode.set(f.getName(), subNode);
-                                    } else {
-                                        paramNode.put(f.getName(), f.getGenericType().getTypeName());
-                                    }
-                                }
-                            }
-                        }
-                        urlToJson.put(url + mrm.value()[0], paramNode);
-                    }
-
-                } else {
-                    urlToJson.put(url + mrm.value()[0], null);
-                }
-            }
-        }
+				String url = getUrl(aClass, aMethod);
+				bindMutipleUrlToClass(url, aClass);
+				urlToMethod.put(url, aMethod);
+				
+				// find all required parameter data for a specified HttpService
+				ObjectNode json = extractDataFromMethod(aMethod); 
+				urlToJson.put(url, json.size() == 0 ? null : json);
+			}
+		}
 	}
 
-    void addUrlToClass(String clz, String url) {
-        List<String> list = classToUrl.get(clz) == null ?
-                new ArrayList<>() : classToUrl.get(clz);
-        list.add(url);
-        classToUrl.put(clz, list);
-    }
+	/*********************************************************************
+	 * 
+	 *  Extract Data
+	 * 
+	 *********************************************************************/
+	
+	protected ObjectNode extractDataFromMethod(Method aMethod) throws Exception {
+		ObjectNode json = new ObjectMapper().createObjectNode();
+		for (Parameter param : getValidParameters(aMethod.getParameters())) {
+			String typeName = param.getParameterizedType().getTypeName();
+			if (JavaUtil.isPrimitive(typeName)) {
+				json.put(param.getName(), typeName);
+			} else if (JavaUtil.isSimpleObjectType(typeName)) {
+				merge(json, extractDataFromClassFields(typeName, null));
+			} else if (JavaUtil.isGenericObjectType(typeName)) {
+				json.set(param.getName(), extractDataFromClassFields(
+									getExplicitClassName(typeName), 
+									getImpliedClassName(typeName)));
+			} else {
+				// I believe this condition is not exist.
+				continue;
+			}
+		}
+		return json;
+	}
+
+	
+	// TODO, support nested object later 
+	protected ObjectNode extractDataFromClassFields(String explicitClassName, String impliedClassName) throws Exception {
+		ObjectNode json = new ObjectMapper().createObjectNode();
+		for (Field f : Class.forName(explicitClassName).getDeclaredFields()) {
+			String typeName = f.getGenericType().getTypeName();
+			if (f.getGenericType().getTypeName().equals("T")) {
+				json.set(f.getName(), extractDataFromClassFields(impliedClassName, null));
+			} else {
+				json.put(f.getName(), typeName);
+			}
+		}
+		return json;
+	}
+	
+	/*********************************************************************
+	 * 
+	 *  Core 
+	 * 
+	 *********************************************************************/
+
+	String getUrl(Class<?> clz, Method method) {
+		return getUrlPrefixFromClass(clz) + getUrlPostfixFromMethod(method);
+	}
+	
+	String getUrlPostfixFromMethod(Method method) {
+		RequestMapping reqMap = method.getAnnotation(RequestMapping.class);
+		return reqMap.value()[0];
+	}
+	
+	String getUrlPrefixFromClass(Class<?> clz) {
+		RequestMapping reqMap = clz.getAnnotation(RequestMapping.class);
+		return reqMap.value()[0] == null ? "" : reqMap.value()[0];
+	}
+
+	
+	List<Method> getMethodsWithRequestMapping(Class<?> clz) {
+		List<Method> list = new ArrayList<>();
+		for (Method m : clz.getDeclaredMethods()) {
+			RequestMapping reqMap = m.getAnnotation(RequestMapping.class);
+			if (reqMap == null) {
+				continue;
+			}
+			list.add(m);
+		}
+		return list;
+	}
+
+	List<Parameter> getValidParameters(Parameter[] pArray) {
+		List<Parameter> list = new ArrayList<>();
+		for (Parameter p : pArray) {
+			// ignore javax.servlet.http.HttpServletResponse
+			// and javax.servlet.http.HttpServletRequest
+			if (p.getParameterizedType().getTypeName().startsWith("javax.servlet.http")) {
+				continue;
+			}
+			list.add(p);
+		}
+		return list;
+	}
+	
+	String getImpliedClassName(String typeName) {
+		int idx = typeName.indexOf("<");
+		return typeName.substring(idx + 1, typeName.length() - 1);
+	}
+
+	String getExplicitClassName(String typeName) {
+		int idx = typeName.indexOf("<");
+		return typeName.substring(0, idx);
+	}
+
+	void merge(JsonNode thisJson, JsonNode mergedJson) throws Exception {
+		Iterator<String> it = mergedJson.fieldNames();
+		while (it.hasNext()) {
+			String key = it.next();
+			((ObjectNode) thisJson).set(key, mergedJson.get(key));
+		}
+	}
+	
+	void bindMutipleUrlToClass(String url, Class<?> clz) {
+		List<String> list = fullnameToUrlGroup.get(clz.getName()) == null 
+				? new ArrayList<>() : fullnameToUrlGroup.get(clz.getName());
+		list.add(url);
+		fullnameToUrlGroup.put(clz.getName(), list);
+	}
+
+	/*********************************************************************
+	 * 
+	 *  Getter 
+	 * 
+	 *********************************************************************/
+	public Map<String, Class<?>> getFullnameToClass() {
+		return fullnameToClass;
+	}
+
+	public void setFullnameToClass(Map<String, Class<?>> fullnameToClass) {
+		this.fullnameToClass = fullnameToClass;
+	}
+
+	public Map<String, List<String>> getFullnameToUrlGroup() {
+		return fullnameToUrlGroup;
+	}
+
+	public void setFullnameToUrlGroup(Map<String, List<String>> fullnameToUrlGroup) {
+		this.fullnameToUrlGroup = fullnameToUrlGroup;
+	}
+
+	public Map<String, Method> getUrlToMethod() {
+		return urlToMethod;
+	}
+
+	public void setUrlToMethod(Map<String, Method> urlToMethod) {
+		this.urlToMethod = urlToMethod;
+	}
+
+	public Map<String, ObjectNode> getUrlToJson() {
+		return urlToJson;
+	}
+
+	public void setUrlToJson(Map<String, ObjectNode> urlToJson) {
+		this.urlToJson = urlToJson;
+	}
+
+	public String getPkgName() {
+		return pkgName;
+	}
+	
 }

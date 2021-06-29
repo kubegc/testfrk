@@ -302,4 +302,12 @@ public class JavaUtil {
 	public static boolean isNull(Object obj) {
 		return (obj == null) ? true : false;
 	}
+	
+	public static boolean isSimpleObjectType(String typeName) {
+		return !typeName.contains("<");
+	}
+	
+	public static boolean isGenericObjectType(String typeName) {
+		return typeName.contains("<");
+	}
 }

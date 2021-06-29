@@ -3,7 +3,9 @@
  */
 package io.github.newhero.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 
 /**
@@ -24,5 +26,17 @@ public class FileUtil {
 		java.write(content);
 		java.flush();
 		java.close();
+	}
+	
+	public static String read(String name) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		BufferedReader br = new BufferedReader(
+				new FileReader(new File(name)));
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			sb.append(line);
+		}
+		br.close();
+		return sb.toString();
 	}
 }

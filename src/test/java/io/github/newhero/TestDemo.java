@@ -24,7 +24,7 @@ import io.github.newhero.utils.JavaUtil;
  * @author wuheng@iscas.ac.cn
  * @since 2021.6.29
  */
-public class Test {
+public class TestDemo {
 
     public static String CLASS_TEMP = "package com.newhero.zw.prep.app.test;\n" +
             "\n" +

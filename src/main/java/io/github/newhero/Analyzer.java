@@ -29,13 +29,15 @@ import io.github.newhero.utils.JavaUtil;
  */
 public class Analyzer {
 
-	protected Map<String, Class<?>>     fullnameToClass    = new HashMap<>();
+	protected Map<String, Class<?>>     nameToClass        = new HashMap<>();
 	
-	protected Map<String, List<String>> fullnameToUrlGroup = new HashMap<>();
+	protected Map<String, List<String>> nameToUrlGroup     = new HashMap<>();
 
 	protected Map<String, Method>       urlToMethod        = new HashMap<>();
+	
+	protected Map<String, String>       urlToReqType       = new HashMap<>();
 
-	protected Map<String, ObjectNode>   urlToJson          = new HashMap<>();
+	protected Map<String, ObjectNode>   urlToJsonData      = new HashMap<>();
 
 	protected final String pkgName;
 
@@ -53,7 +55,7 @@ public class Analyzer {
 
 		// find all (controller) classes
 		for (Class<?> aClass : ClassUtil.scan(pkgName, requestMappingAnnotation)) {
-			fullnameToClass.put(aClass.getName(), aClass);
+			nameToClass.put(aClass.getName(), aClass);
 
 			// find all methods exported as HttpServices
 			for (Method aMethod : getMethodsWithRequestMapping(aClass)) {
@@ -61,10 +63,11 @@ public class Analyzer {
 				String url = getUrl(aClass, aMethod);
 				bindMutipleUrlToClass(url, aClass);
 				urlToMethod.put(url, aMethod);
+				urlToReqType.put(url, getRequestType(aMethod));
 				
 				// find all required parameter data for a specified HttpService
 				ObjectNode json = extractDataFromMethod(aMethod); 
-				urlToJson.put(url, json.size() == 0 ? null : json);
+				urlToJsonData.put(url, json.size() == 0 ? null : json);
 			}
 		}
 	}
@@ -129,7 +132,6 @@ public class Analyzer {
 		RequestMapping reqMap = clz.getAnnotation(RequestMapping.class);
 		return reqMap.value()[0] == null ? "" : reqMap.value()[0];
 	}
-
 	
 	List<Method> getMethodsWithRequestMapping(Class<?> clz) {
 		List<Method> list = new ArrayList<>();
@@ -174,11 +176,16 @@ public class Analyzer {
 		}
 	}
 	
+	String getRequestType(Method m) {
+		RequestMapping reqMap = m.getAnnotation(RequestMapping.class);
+		return reqMap.method()[0].name();
+	}
+	
 	void bindMutipleUrlToClass(String url, Class<?> clz) {
-		List<String> list = fullnameToUrlGroup.get(clz.getName()) == null 
-				? new ArrayList<>() : fullnameToUrlGroup.get(clz.getName());
+		List<String> list = nameToUrlGroup.get(clz.getName()) == null 
+				? new ArrayList<>() : nameToUrlGroup.get(clz.getName());
 		list.add(url);
-		fullnameToUrlGroup.put(clz.getName(), list);
+		nameToUrlGroup.put(clz.getName(), list);
 	}
 
 	/*********************************************************************
@@ -186,40 +193,30 @@ public class Analyzer {
 	 *  Getter 
 	 * 
 	 *********************************************************************/
-	public Map<String, Class<?>> getFullnameToClass() {
-		return fullnameToClass;
+	
+	public Map<String, Class<?>> getNameToClass() {
+		return nameToClass;
 	}
 
-	public void setFullnameToClass(Map<String, Class<?>> fullnameToClass) {
-		this.fullnameToClass = fullnameToClass;
-	}
-
-	public Map<String, List<String>> getFullnameToUrlGroup() {
-		return fullnameToUrlGroup;
-	}
-
-	public void setFullnameToUrlGroup(Map<String, List<String>> fullnameToUrlGroup) {
-		this.fullnameToUrlGroup = fullnameToUrlGroup;
+	public Map<String, List<String>> getNameToUrlGroup() {
+		return nameToUrlGroup;
 	}
 
 	public Map<String, Method> getUrlToMethod() {
 		return urlToMethod;
 	}
 
-	public void setUrlToMethod(Map<String, Method> urlToMethod) {
-		this.urlToMethod = urlToMethod;
+	public Map<String, String> getUrlToReqType() {
+		return urlToReqType;
 	}
 
-	public Map<String, ObjectNode> getUrlToJson() {
-		return urlToJson;
-	}
-
-	public void setUrlToJson(Map<String, ObjectNode> urlToJson) {
-		this.urlToJson = urlToJson;
+	public Map<String, ObjectNode> getUrlToJsonData() {
+		return urlToJsonData;
 	}
 
 	public String getPkgName() {
 		return pkgName;
 	}
+
 	
 }

@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero;
+package io.github.newhero.old;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -24,7 +24,7 @@ import io.github.newhero.utils.JavaUtil;
  * @author wuheng@iscas.ac.cn
  * @since 2021.6.29
  */
-public class TestDemo {
+public class SimpleDemo {
 
     public static String CLASS_TEMP = "package com.newhero.zw.prep.app.test;\n" +
             "\n" +
@@ -79,23 +79,24 @@ public class TestDemo {
     static Map<String, ObjectNode> urlToJson = new HashMap<>();
 
     public static  void  main(String[] args) throws ClassNotFoundException {
-        analyse();
-        for (String name : classToUrl.keySet()) {
-            System.out.print(CLASS_TEMP.replace("#CLASSNAME#", name + "Test"));
-            for (String url : classToUrl.get(name)) {
-                String content = urlToJson.get(url) == null ?
-                        METHOD_TEMP.replace("#URL#", url)
-                                .replace("#NAME#", urlToMethod.get(url))
-                                .replace("#NAME#", urlToMethod.get(url))
-                                .replace("#DATA#", ""):
-                        METHOD_TEMP.replace("#URL#", url)
-                                .replace("#NAME#", urlToMethod.get(url))
-                                .replace("#NAME#", urlToMethod.get(url))
-                                .replace("#DATA#", urlToJson.get(url).toPrettyString());
-                System.out.println(content);
-            }
-            System.out.println("\n}\n\n");
-        }
+    	System.out.println(METHOD_TEMP);
+//        analyse();
+//        for (String name : classToUrl.keySet()) {
+//            System.out.print(CLASS_TEMP.replace("#CLASSNAME#", name + "Test"));
+//            for (String url : classToUrl.get(name)) {
+//                String content = urlToJson.get(url) == null ?
+//                        METHOD_TEMP.replace("#URL#", url)
+//                                .replace("#NAME#", urlToMethod.get(url))
+//                                .replace("#NAME#", urlToMethod.get(url))
+//                                .replace("#DATA#", ""):
+//                        METHOD_TEMP.replace("#URL#", url)
+//                                .replace("#NAME#", urlToMethod.get(url))
+//                                .replace("#NAME#", urlToMethod.get(url))
+//                                .replace("#DATA#", urlToJson.get(url).toPrettyString());
+//                System.out.println(content);
+//            }
+//            System.out.println("\n}\n\n");
+//        }
     }
 
     private static void analyse() throws ClassNotFoundException {

@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero;
+package io.github.newhero.utils;
 
 import io.github.newhero.utils.FileUtil;
 

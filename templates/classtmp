@@ -1,5 +1,5 @@
 /**
- * Copyright (2019, ) Institute of Software, Chinese Academy of Sciences
+ * Copyright (2021, ) NewHero COM.LTM
  */
 package #TESTCASE_PACKAGE#;
 
@@ -19,8 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.github.kubesys.httpfrk.core.HttpConstants;
-
 /**
  * @author wuheng@iscas.ac.cn
  * @since  2019.11.16
@@ -30,3 +28,6 @@ import com.github.kubesys.httpfrk.core.HttpConstants;
 @AutoConfigureMockMvc
 @ComponentScan(basePackages= {"#SOURCE_PACKAGE#"})
 public class #CLASSNAME#  {
+
+    @Autowired
+    private MockMvc mvc;

@@ -113,23 +113,20 @@ public class Generator {
 
 		Method m = analyzer.getUrlToMethod().get(url);
 		for (Parameter p : m.getParameters()) {
-			System.out.println(p.getParameterizedType().getTypeName());
-			if (JavaUtil.isPrimitive(p.getParameterizedType().getTypeName())) {
-				Object val = (i == -1) ? ValueUtil.getTrueValue(p) :
-						(keys.get(i).equals(p.getName()) ? ValueUtil.getFalseValue(p) 
-								: ValueUtil.getTrueValue(p));
-				String asType  = data.get(p.getName()).asText();
-				if (asType.equals(String.class.getName())) {
-					data.put(p.getName(), (String) val);
-				} else if (asType.equals(Integer.class.getName()) || asType.equals("int")) {
-					data.put(p.getName(), (Integer) val);
-				} else if (asType.equals(Boolean.class.getName()) || asType.equals("boolean")) {
-					data.put(p.getName(), (Boolean) val);
-				} else if (!JavaUtil.isPrimitive(asType)) {
-					data.set(asType, (JsonNode) val);
-				} else {
-					throw new Exception("Unsupport Java type");
-				}
+			Object val = (i == -1) ? ValueUtil.getTrueValue(p) :
+					(keys.get(i).equals(p.getName()) ? ValueUtil.getFalseValue(p) 
+							: ValueUtil.getTrueValue(p));
+			String asType  = data.get(p.getName()).asText();
+			if (asType.equals(String.class.getName())) {
+				data.put(p.getName(), (String) val);
+			} else if (asType.equals(Integer.class.getName()) || asType.equals("int")) {
+				data.put(p.getName(), (Integer) val);
+			} else if (asType.equals(Boolean.class.getName()) || asType.equals("boolean")) {
+				data.put(p.getName(), (Boolean) val);
+			} else if (!JavaUtil.isPrimitive(asType)) {
+				data.set(asType, (JsonNode) val);
+			} else {
+				throw new Exception("Unsupport Java type");
 			}
 		}
 	}

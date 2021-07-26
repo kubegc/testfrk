@@ -1,8 +1,4 @@
-/**
- * Copyright (2019, ) Institute of Software, Chinese Academy of Sciences
- */
-package io.github.newhero.http;
-
+package io.github.newhero.springboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,7 +24,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * 
  */
 @ComponentScan(basePackages = {
-		"io.github.newhero.http" })
+		"io.github.newhero.springboot.controllers" })
 @SpringBootApplication
 @EnableAutoConfiguration
 @Configuration

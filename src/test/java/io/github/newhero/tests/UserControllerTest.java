@@ -1,7 +1,7 @@
 /**
  * Copyright (2021, ) NewHero COM.LTM
  */
-package com.newhero;
+package io.github.newhero.tests;
 
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,17 +24,17 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
  * @since  2019.11.16
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = io.github.newhero.http.TestServer.class)
+@SpringBootTest(classes = io.github.newhero.springboot.TestServer.class)
 @AutoConfigureMockMvc
-@ComponentScan(basePackages= {"io.github.newhero.http"})
-public class SwaggerServiceTest  {
+@ComponentScan(basePackages= {"io.github.newhero.springboot"})
+public class UserControllerTest  {
 
     @Autowired
     private MockMvc mvc;
-	public final static String ECHOHELLO2_PATH = "/test/echoUser";
+	public final static String ECHOHELLO2_PATH = "/user/echoUser";
 
     
-    private String ECHOHELLO2_INVALID_NAME__DATA ="{  \"name\" : \"java.lang.String\",  \"age\" : \"int\"}";
+    private String ECHOHELLO2_INVALID_NAME__DATA ="{  \"name\" : \"J7BJ1631IDA58F596DFJ5\",  \"age\" : 99}";
 
     @Test
     public void ECHOHELLO2_INVALID_NAME_Test() throws Exception {
@@ -50,7 +50,7 @@ public class SwaggerServiceTest  {
 
 
     
-    private String ECHOHELLO2_INVALID_AGE__DATA ="{  \"name\" : \"java.lang.String\",  \"age\" : \"int\"}";
+    private String ECHOHELLO2_INVALID_AGE__DATA ="{  \"name\" : \"2G0GI837C66A7FGA3A9\",  \"age\" : 101}";
 
     @Test
     public void ECHOHELLO2_INVALID_AGE_Test() throws Exception {
@@ -66,7 +66,7 @@ public class SwaggerServiceTest  {
 
 
     
-    private String ECHOHELLO2_VALID__DATA ="{  \"name\" : \"java.lang.String\",  \"age\" : \"int\"}";
+    private String ECHOHELLO2_VALID__DATA ="{  \"name\" : \"G077DFA1331AC8E5D82\",  \"age\" : 99}";
 
     @Test
     public void ECHOHELLO2_VALID_Test() throws Exception {

@@ -24,6 +24,7 @@ public class ValueUtil {
 	static Random random = new Random();
 
 	public static Object getTrueValue(Parameter p) {
+		
 		Pattern exp = p.getAnnotation(Pattern.class);
 		if (exp != null) {
 			return getStringTrueValue(exp);

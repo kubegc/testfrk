@@ -116,6 +116,12 @@ public class Generator {
 			Object val = (i == -1) ? ValueUtil.getTrueValue(p) :
 					(keys.get(i).equals(p.getName()) ? ValueUtil.getFalseValue(p) 
 							: ValueUtil.getTrueValue(p));
+			
+			if (val == null) {
+				data.remove(p.getName());
+				continue;
+			}
+			
 			String asType  = data.get(p.getName()).asText();
 			if (asType.equals(String.class.getName())) {
 				data.put(p.getName(), (String) val);

@@ -20,7 +20,8 @@ public class UserController {
 			method = RequestMethod.POST)
 	public Object echoHello2(@RequestBody 
 			@Pattern(regexp = "[0-9a-zA-Z]{6,20}") String name, 
-			@Min(0) @Max(100) int age) {
+			@Min(0) @Max(100) int age,
+			String desc) {
 		return "Hello, " + name + "," + age;
 	}
 	

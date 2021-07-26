@@ -15,6 +15,7 @@ public class TestCasesGenerator {
     public static void main(String[] args) throws Exception {
     	Analyzer analyzer = new Analyzer("io.github.newhero.springboot");
     	analyzer.start();
+    	
     	Generator generator = new Generator(analyzer, TestServer.class, "io.github.newhero.tests");
     	generator.start();
     }

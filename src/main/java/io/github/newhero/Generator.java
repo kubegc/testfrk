@@ -6,8 +6,11 @@ package io.github.newhero;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,6 +26,9 @@ import io.github.newhero.utils.ValueUtil;
  */
 public class Generator {
 
+	
+	public static final Set<String> nullController = new HashSet<>();
+	
 	protected final Analyzer analyzer;
 
 	protected final Class<?> bootstrap;
@@ -48,25 +54,37 @@ public class Generator {
 			sb.append(FileUtil.read("templates/classtmp").replace("#TESTCASE_PACKAGE#", pkgName)
 					.replace("#BOOTSTRAP#", bootstrap.getName()).replace("#SOURCE_PACKAGE#", analyzer.pkgName)
 					.replace("#CLASSNAME#", clz.getSimpleName() + "Test"));
-
-			for (String url : analyzer.getNameToUrlGroup().get(clz.getName())) {
-
-				sb.append(PATH.replace("#METHON#", analyzer.getUrlToMethod().get(url).getName().toUpperCase())
-						.replace("#URL#", url));
-
-				List<String> keys = getKeys(analyzer.getUrlToJsonData().get(url));
-				for (int i = 0; i < keys.size(); i++) {
-					String tpl = getTplWithFalse(url, keys, i);
-					sb.append(tpl).append("\n\n");
+			try {
+				Map<String, List<String>> nameToUrlGroup = analyzer.getNameToUrlGroup();
+				for (String url : nameToUrlGroup.get(clz.getName())) {
+					System.out.println(url);
+	
+					try {
+						List<String> keys = getKeys(analyzer.getUrlToJsonData().get(url));
+						String tplWithTrue = getTplWithTrue(url, keys);
+						sb.append(PATH.replace("#METHON#", analyzer.getUrlToMethod().get(url).getName())
+								.replace("#URL#", url));
+		
+						
+						for (int i = 0; i < keys.size(); i++) {
+							String tpl = getTplWithFalse(url, keys, i);
+							sb.append(tpl).append("\n\n");
+						}
+						
+						sb.append(tplWithTrue).append("\n\n");
+					} catch (Exception ex) {
+						System.err.println("ignore url.");
+					}
 				}
-
-				sb.append(getTplWithTrue(url, keys)).append("\n\n");
+	
+				sb.append("\n}\n\n");
+	
+				System.out.println(sb.toString());
+				FileUtil.write(pkgName, clz.getSimpleName() + "Test", sb.toString());
+			} catch (Exception ex) {
+				System.err.println(fullname + " is not used");
+				nullController.add(fullname);
 			}
-
-			sb.append("\n}\n\n");
-
-			System.out.println(sb.toString());
-			FileUtil.write(pkgName, clz.getSimpleName() + "Test", sb.toString());
 		}
 	}
 
@@ -82,9 +100,9 @@ public class Generator {
 		tpl = (data == null) ? tpl.replace(BODY, "")
 				: tpl.replace("#DATA#", data.toPrettyString().replaceAll("\"", "\\\\\"").replaceAll("[\\t\\n\\r]", ""));
 
-		String name = analyzer.getUrlToMethod().get(url).getName().toUpperCase() + "_VALID_";
+		String name = analyzer.getUrlToMethod().get(url).getName() + "_VALID_";
 		return tpl.replaceAll("#NAME#", name).replace("#VALUE#", "true").replace("#METHON#",
-				analyzer.getUrlToMethod().get(url).getName().toUpperCase());
+				analyzer.getUrlToMethod().get(url).getName());
 	}
 
 	private String getTplWithFalse(String url, List<String> keys, int i) throws Exception {
@@ -99,10 +117,10 @@ public class Generator {
 		tpl = (data == null) ? tpl.replace(BODY, "")
 				: tpl.replace("#DATA#", data.toPrettyString().replaceAll("\"", "\\\\\"").replaceAll("[\\t\\n\\r]", ""));
 
-		String name = analyzer.getUrlToMethod().get(url).getName().toUpperCase() + "_INVALID_"
-				+ keys.get(i).toUpperCase() + "_";
+		String name = analyzer.getUrlToMethod().get(url).getName() + "_INVALID_"
+				+ keys.get(i) + "_";
 		return tpl.replaceAll("#NAME#", name).replace("#VALUE#", "false").replace("#METHON#",
-				analyzer.getUrlToMethod().get(url).getName().toUpperCase());
+				analyzer.getUrlToMethod().get(url).getName());
 	}
 
 	private void fillData(String url, List<String> keys, int i, ObjectNode data) throws Exception {

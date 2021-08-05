@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Random;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -101,8 +102,14 @@ public class ValueUtil {
 
 		Max max = f.getAnnotation(Max.class);
 		if (max != null) {
-			return type.equals("true") ? getIntTrueValue(classname, f.getName(), max)
-					: getIntFalseValue(classname, f.getName(), max);
+			return type.equals("true") ? getMaxTrueValue(classname, f.getName(), max)
+					: getMaxFalseValue(classname, f.getName(), max);
+		}
+		
+		Min min = f.getAnnotation(Min.class);
+		if (min != null) {
+			return type.equals("true") ? getMinTrueValue(classname, f.getName(), min)
+					: getMinFalseValue(classname, f.getName(), min);
 		}
 
 		return null;
@@ -133,11 +140,19 @@ public class ValueUtil {
 		return new String(chArr);
 	}
 
-	public static int getIntTrueValue(String classname, String name, Max exp) {
+	public static int getMaxTrueValue(String classname, String name, Max exp) {
 		return (int) (exp.value() - 1);
 	}
 
-	public static int getIntFalseValue(String classname, String name, Max exp) {
+	public static int getMaxFalseValue(String classname, String name, Max exp) {
 		return (int) (exp.value() + 1);
+	}
+	
+	public static int getMinTrueValue(String classname, String name, Min exp) {
+		return (int) (exp.value() + 1);
+	}
+
+	public static int getMinFalseValue(String classname, String name, Min exp) {
+		return (int) (exp.value() - 1);
 	}
 }

@@ -15,7 +15,6 @@ import java.util.Set;
 
 import org.springframework.validation.annotation.Validated;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.newhero.utils.FileUtil;
@@ -135,9 +134,15 @@ public class Generator {
 
 		Method m = analyzer.getUrlToMethod().get(url);
 		for (Parameter p : m.getParameters()) {
-			Validated[] v = p.getAnnotationsByType(Validated.class);
+			Validated[] v = p.getDeclaredAnnotationsByType(Validated.class);
 			
-			String asType  = p.getType().getName();
+			try {
+				System.out.println(v[0]);
+			} catch (Exception ex) {
+				v = null;
+			}
+			
+			String asType = getType(p);
 			if (!JavaUtil.isPrimitive(asType)) {
 				for (Field f : Class.forName(asType).getDeclaredFields()) {
 					Object value = getValue(keys, p.getType().getSimpleName(), f, i, v);
@@ -157,6 +162,12 @@ public class Generator {
 				}
 			}
 		}
+	}
+
+	private String getType(Parameter p) {
+		String asType  = p.getType().getName();
+		int indexOf = asType.indexOf("<");
+		return (indexOf != -1) ? asType.substring(0, indexOf) :  asType;
 	}
 
 	Object getValue(List<String> keys, String classname, Field f, int i, Validated[] v) {

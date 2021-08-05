@@ -137,7 +137,7 @@ public class Generator {
 			Validated[] v = p.getDeclaredAnnotationsByType(Validated.class);
 			
 			try {
-				System.out.println(v[0]);
+				System.out.println(v[0].value()[0]);
 			} catch (Exception ex) {
 				v = null;
 			}
@@ -156,7 +156,7 @@ public class Generator {
 							|| typename.equals("boolean")) {
 						put(data, f.getName(), (Boolean) value);
 					} else {
-						throw new Exception("Unsupport Java type");
+						data.remove(f.getName());
 					}
 					
 				}

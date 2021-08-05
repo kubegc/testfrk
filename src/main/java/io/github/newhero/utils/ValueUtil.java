@@ -77,6 +77,17 @@ public class ValueUtil {
 		String tag = (values != null) ? values[0].getName() : null;
 		String key = classname + "." + type + "." + f.getName();
 		
+		Max max = f.getAnnotation(Max.class);
+		if (max != null) {
+			return type.equals("true") ? getMaxTrueValue(classname, f.getName(), max)
+					: getMaxFalseValue(classname, f.getName(), max);
+		}
+		
+		Min min = f.getAnnotation(Min.class);
+		if (min != null) {
+			return type.equals("true") ? getMinTrueValue(classname, f.getName(), min)
+					: getMinFalseValue(classname, f.getName(), min);
+		}
 		
 		Null _null = f.getAnnotation(Null.class);
 		if (_null != null && contain(_null.groups(), tag)) {
@@ -94,18 +105,6 @@ public class ValueUtil {
 //			return type.equals("true") ? getStringTrueValue(classname, f.getName(), exp)
 //					: getStringFalseValue(classname, f.getName(), exp);
 			return props.get(key);
-		}
-
-		Max max = f.getAnnotation(Max.class);
-		if (max != null) {
-			return type.equals("true") ? getMaxTrueValue(classname, f.getName(), max)
-					: getMaxFalseValue(classname, f.getName(), max);
-		}
-		
-		Min min = f.getAnnotation(Min.class);
-		if (min != null) {
-			return type.equals("true") ? getMinTrueValue(classname, f.getName(), min)
-					: getMinFalseValue(classname, f.getName(), min);
 		}
 
 		return null;

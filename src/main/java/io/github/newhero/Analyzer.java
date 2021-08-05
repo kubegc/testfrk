@@ -87,9 +87,12 @@ public class Analyzer {
 			} else if (JavaUtil.isSimpleObjectType(typeName)) {
 				merge(json, extractDataFromClassFields(typeName, null));
 			} else if (JavaUtil.isGenericObjectType(typeName)) {
-				json.set(param.getName(), extractDataFromClassFields(
-									getExplicitClassName(typeName), 
-									getImpliedClassName(typeName)));
+//				json.set(param.getName(), extractDataFromClassFields(
+//									getExplicitClassName(typeName), 
+//									getImpliedClassName(typeName)));
+				merge(json,extractDataFromClassFields(
+						getExplicitClassName(typeName), 
+						getImpliedClassName(typeName)));
 			} else {
 				// I believe this condition is not exist.
 				continue;

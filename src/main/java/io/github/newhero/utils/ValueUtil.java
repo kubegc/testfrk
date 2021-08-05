@@ -3,10 +3,16 @@
  */
 package io.github.newhero.utils;
 
-import java.lang.reflect.Parameter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.lang.reflect.Field;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
 
 /**
@@ -16,6 +22,21 @@ import javax.validation.constraints.Pattern;
  */
 public class ValueUtil {
 
+	
+	protected static Properties props = new Properties();
+	
+	static {
+		File file = new File("config/defvalue.conf");
+		if (file.exists()) {
+			try {
+				props.load(new FileInputStream(file));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	static char[] codes = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 			'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c',
 			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
@@ -23,37 +44,73 @@ public class ValueUtil {
 
 	static Random random = new Random();
 
-	public static Object getTrueValue(Parameter p) {
+	static boolean contain(Class[] clzg, String tag) {
+		if (clzg == null && tag == null) {
+			return true;
+		}
 		
-		Pattern exp = p.getAnnotation(Pattern.class);
+		if (clzg == null && tag != null) {
+			return false;
+		}
+		
+		for (Class<?> c : clzg) {
+			if (c.getName().equals(tag)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static Object getTrueValue(String classname, Field f, Class<?>[] values) {
+		
+		return getValue(classname, f, values, "true");
+	}
+	
+	public static Object getFalseValue(String classname, Field f, Class<?>[] values) {
+
+		return getValue(classname, f, values, "false");
+	}
+
+	private static Object getValue(String classname, Field f, Class<?>[] values, String type) {
+		String tag = (values != null) ? values[0].getName() : null;
+		String key = classname + "." + type + "." + f.getName();
+		
+		
+		Null _null = f.getAnnotation(Null.class);
+		if (_null != null && contain(_null.groups(), tag)) {
+			return null;
+		}
+		
+		NotNull _notNull = f.getAnnotation(NotNull.class);
+		if (_notNull != null && contain(_notNull.groups(), tag)) {
+			return props.get(key);
+		}
+		
+		NotBlank _notBlank = f.getAnnotation(NotBlank.class);
+		if (_notBlank != null && contain(_notBlank.groups(), tag)) {
+			return props.get(key);
+		}
+		
+		Pattern exp = f.getAnnotation(Pattern.class);
 		if (exp != null) {
-			return getStringTrueValue(exp);
+//			return type.equals("true") ? getStringTrueValue(classname, f.getName(), exp)
+//					: getStringFalseValue(classname, f.getName(), exp);
+			return props.get(key);
 		}
 
-		Max max = p.getAnnotation(Max.class);
+		Max max = f.getAnnotation(Max.class);
 		if (max != null) {
-			return getIntTrueValue(max);
+			return type.equals("true") ? getIntTrueValue(classname, f.getName(), max)
+					: getIntFalseValue(classname, f.getName(), max);
 		}
 
 		return null;
 	}
 
-	public static Object getFalseValue(Parameter p) {
 
-		Pattern exp = p.getAnnotation(Pattern.class);
-		if (exp != null) {
-			return getStringFalseValue(exp);
-		}
-
-		Max max = p.getAnnotation(Max.class);
-		if (max != null) {
-			return getIntFalseValue(max);
-		}
-
-		return null;
-	}
-
-	public static String getStringTrueValue(Pattern exp) {
+	public static String getStringTrueValue(String classname, String name, Pattern exp) {
+		
 		String v = exp.regexp();
 		int idx = v.lastIndexOf(",");
 		int len = Integer.parseInt(v.substring(idx + 1, v.length() - 1)) - 1;
@@ -65,7 +122,7 @@ public class ValueUtil {
 
 	}
 
-	public static String getStringFalseValue(Pattern exp) {
+	public static String getStringFalseValue(String classname, String name, Pattern exp) {
 		String v = exp.regexp();
 		int idx = v.lastIndexOf(",");
 		int len = Integer.parseInt(v.substring(idx + 1, v.length() - 1)) + 1;
@@ -76,11 +133,11 @@ public class ValueUtil {
 		return new String(chArr);
 	}
 
-	public static int getIntTrueValue(Max exp) {
+	public static int getIntTrueValue(String classname, String name, Max exp) {
 		return (int) (exp.value() - 1);
 	}
 
-	public static int getIntFalseValue(Max exp) {
+	public static int getIntFalseValue(String classname, String name, Max exp) {
 		return (int) (exp.value() + 1);
 	}
 }

@@ -3,6 +3,7 @@
  */
 package io.github.newhero;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,12 +41,13 @@ public class Generator {
 	public static final String BODY = ".content(#NAME#_DATA)";
 
 	public static final String PATH = "\tpublic final static String #METHON#_PATH = \"#URL#\";\n\n";
-
-	public Generator(Analyzer analyzer, Class<?> bootstrap, String pkgName) {
+	
+	public Generator(Analyzer analyzer, Class<?> bootstrap, String pkgName) throws Exception {
 		super();
 		this.analyzer = analyzer;
 		this.bootstrap = bootstrap;
 		this.pkgName = pkgName;
+		
 	}
 
 	public void start() throws Exception {
@@ -131,27 +135,57 @@ public class Generator {
 
 		Method m = analyzer.getUrlToMethod().get(url);
 		for (Parameter p : m.getParameters()) {
-			Object val = (i == -1) ? ValueUtil.getTrueValue(p) :
-					(keys.get(i).equals(p.getName()) ? ValueUtil.getFalseValue(p) 
-							: ValueUtil.getTrueValue(p));
+			Validated[] v = p.getAnnotationsByType(Validated.class);
 			
-			if (val == null) {
-				data.remove(p.getName());
-				continue;
+			String asType  = p.getType().getName();
+			if (!JavaUtil.isPrimitive(asType)) {
+				for (Field f : Class.forName(asType).getDeclaredFields()) {
+					Object value = getValue(keys, p.getType().getSimpleName(), f, i, v);
+					String typename = f.getType().getName();
+					if (typename.equals(String.class.getName())) {
+						put(data, f.getName(), (String) value);
+					} else if (typename.equals(Integer.class.getName()) 
+							|| typename.equals("int")) {
+						put(data, f.getName(), (Integer) value);
+					} else if (typename.equals(Boolean.class.getName()) 
+							|| typename.equals("boolean")) {
+						put(data, f.getName(), (Boolean) value);
+					} else {
+						throw new Exception("Unsupport Java type");
+					}
+					
+				}
 			}
-			
-			String asType  = data.get(p.getName()).asText();
-			if (asType.equals(String.class.getName())) {
-				data.put(p.getName(), (String) val);
-			} else if (asType.equals(Integer.class.getName()) || asType.equals("int")) {
-				data.put(p.getName(), (Integer) val);
-			} else if (asType.equals(Boolean.class.getName()) || asType.equals("boolean")) {
-				data.put(p.getName(), (Boolean) val);
-			} else if (!JavaUtil.isPrimitive(asType)) {
-				data.set(asType, (JsonNode) val);
-			} else {
-				throw new Exception("Unsupport Java type");
-			}
+		}
+	}
+
+	Object getValue(List<String> keys, String classname, Field f, int i, Validated[] v) {
+		return (i == -1) ? ValueUtil.getTrueValue(classname, f, (v == null) ? null : v[0].value()) :
+		(keys.get(i).equals(f.getName()) ? ValueUtil.getFalseValue(classname, f, (v == null) ? null : v[0].value()) 
+				: ValueUtil.getTrueValue(classname, f, (v == null) ? null : v[0].value()));
+	}
+	
+	void put(ObjectNode data, String key, String val) {
+		if (val != null) {
+			data.put(key, val);
+		} else {
+			data.remove(key);
+		}
+	}
+	
+	void put(ObjectNode data, String key, Integer val) {
+		if (val != null) {
+			data.put(key, val);
+		} else {
+			data.remove(key);
+		}
+	}
+	
+	void put(ObjectNode data, String key, Boolean val) {
+		if (val != null) {
+			data.put(key, val);
+		} else {
+			data.remove(key);
 		}
 	}
 

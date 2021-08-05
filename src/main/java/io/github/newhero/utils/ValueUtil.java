@@ -46,7 +46,7 @@ public class ValueUtil {
 	static Random random = new Random();
 
 	static boolean contain(Class[] clzg, String tag) {
-		if (clzg == null && tag == null) {
+		if (tag == null) {
 			return true;
 		}
 		
@@ -88,10 +88,6 @@ public class ValueUtil {
 			return props.get(key);
 		}
 		
-		NotBlank _notBlank = f.getAnnotation(NotBlank.class);
-		if (_notBlank != null && contain(_notBlank.groups(), tag)) {
-			return props.get(key);
-		}
 		
 		Pattern exp = f.getAnnotation(Pattern.class);
 		if (exp != null) {

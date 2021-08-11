@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.springframework.validation.annotation.Validated;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.newhero.utils.FileUtil;
@@ -142,12 +143,14 @@ public class Generator {
 				v = null;
 			}
 			
-			String asType = getType(p);
+			String asType = getFullType(p);
 			if (!JavaUtil.isPrimitive(asType)) {
-				for (Field f : Class.forName(asType).getDeclaredFields()) {
+				for (Field f : Class.forName(getType(p)).getDeclaredFields()) {
 					Object value = getValue(keys, p.getType().getSimpleName(), f, i, v);
 					String typename = f.getType().getName();
-					if (typename.equals(String.class.getName())) {
+					if (typename.equals(Object.class.getName())) {
+						set(data, f.getName(), null);
+					} else if (typename.equals(String.class.getName())) {
 						put(data, f.getName(), (String) value);
 					} else if (typename.equals(Integer.class.getName()) 
 							|| typename.equals("int")) {
@@ -164,6 +167,10 @@ public class Generator {
 		}
 	}
 
+	private String getFullType(Parameter p) {
+		return p.getParameterizedType().getTypeName();
+	}
+	
 	private String getType(Parameter p) {
 		String asType  = p.getType().getName();
 		int indexOf = asType.indexOf("<");
@@ -197,6 +204,15 @@ public class Generator {
 			data.put(key, val);
 		} else {
 			data.remove(key);
+		}
+	}
+	
+	void set(ObjectNode data, String key, Object val) throws Exception {
+		if (val == null) {
+			data.set(key, new ObjectMapper().createObjectNode());
+		} else {
+			data.set(key, new ObjectMapper().readTree(
+					new ObjectMapper().writeValueAsString(val)));
 		}
 	}
 

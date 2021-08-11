@@ -72,6 +72,9 @@ public class Generator {
 						
 						for (int i = 0; i < keys.size(); i++) {
 							String tpl = getTplWithFalse(url, keys, i);
+							if ("".equals(tpl)) {
+								continue;
+							}
 							sb.append(tpl).append("\n\n");
 						}
 						
@@ -123,16 +126,21 @@ public class Generator {
 
 		String name = analyzer.getUrlToMethod().get(url).getName() + "_INVALID_"
 				+ keys.get(i) + "_";
-		return tpl.replaceAll("#NAME#", name).replace("#VALUE#", "false").replace("#METHON#",
+		if (data.has(keys.get(i))) {
+			return tpl.replaceAll("#NAME#", name).replace("#VALUE#", "false").replace("#METHON#",
 				analyzer.getUrlToMethod().get(url).getName());
+		} else {
+			return "";
+		}
 	}
 
-	private void fillData(String url, List<String> keys, int i, ObjectNode data) throws Exception {
+	private boolean fillData(String url, List<String> keys, int i, ObjectNode data) throws Exception {
 
 		if (data == null) {
-			return;
+			return false;
 		}
 
+		boolean hasData = false;
 		Method m = analyzer.getUrlToMethod().get(url);
 		for (Parameter p : m.getParameters()) {
 			Validated[] v = p.getDeclaredAnnotationsByType(Validated.class);
@@ -160,11 +168,13 @@ public class Generator {
 						put(data, f.getName(), (Boolean) value);
 					} else {
 						data.remove(f.getName());
+						hasData = false;
 					}
 					
 				}
 			}
 		}
+		return hasData;
 	}
 
 	private String getFullType(Parameter p) {

@@ -10,5 +10,6 @@
                 .accept(MediaType.APPLICATION_JSON_UTF8);
         mvc.perform(builder)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("success").value(#VALUE#));
+                .andExpect(jsonPath("success").value(#VALUE#))
+                .andReturn();
     }

@@ -18,28 +18,43 @@ import java.util.Set;
  * @since 2021.10.26
  * 
  * find all methods with a specified annotation.
+ * e.g, RequestMapping
  */
 public class Extractor {
 
 
+	/**
+	 * @param clses          see Scanner.scan
+	 * @param anno           e.g, RequestMapping or null 
+	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 */
 	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno) {
 		return extract(clses, anno, null);
 	}
 	
+	/**
+	 * @param clses          see Scanner.scan
+	 * @param anno           e.g, RequestMapping or null 
+	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
+	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 */
 	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno, Map<String, Object> labels) {
 		Map<String, List<Method>> map = new HashMap<>();
 		
+		// no class
 		if (clses == null) {
 			throw new NullPointerException("clses cannot be null");
 		}
 		
+		// for each class
 		for (Class<?> c : clses) {
-			
 			String key = c.getName();
+			// ignore this class because of be analysed 
 			if (map.containsKey(key)) {
 				continue;
 			}
 			
+			// put to mapper
 			map.put(key, extractValues(anno, c, labels));
 		}
 		
@@ -50,7 +65,9 @@ public class Extractor {
 		
 		List<Method> values = new ArrayList<>();
 		
+		// for each method
 		for (Method m : c.getDeclaredMethods()) {
+			// just focus on the method has a specified annotation and labels
 			if (filterViaAnnotation(m, anno, labels) != null) {
 				values.add(m);
 			}
@@ -58,11 +75,13 @@ public class Extractor {
 		return values;
 	}
 	
+	// annotation and labels can be null
 	private static Method filterViaAnnotation(Method m, Class<? extends Annotation> anno, Map<String, Object> labels) {
 		if (anno == null) {
 			return m;
 		}
 		
+		// get annotation
 		Annotation r = m.getAnnotation(anno);
 		return filterViaLabels(r, labels) == null ? null : m;
 	}

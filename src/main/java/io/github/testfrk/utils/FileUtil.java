@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero.utils;
+package io.github.testfrk.utils;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,7 +1,7 @@
 /**
  * Copyright (2021, ) NewHero COM.LTM
  */
-package io.github.newhero.tests;
+package io.github.testfrk.tests;
 
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
  * @since  2019.11.16
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = io.github.newhero.springboot.TestServer.class)
+@SpringBootTest(classes = io.github.testfrk.springboot.TestServer.class)
 @AutoConfigureMockMvc
 @ComponentScan(basePackages= {"io.github.newhero.springboot"})
 public class UserControllerTest  {

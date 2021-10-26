@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero.utils;
+package io.github.testfrk;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -28,25 +28,30 @@ import org.springframework.util.SystemPropertyUtils;
 /**
  * 
  * @author wuheng@iscas.ac.cn
- * @since 2021.6.29
+ * @since 2021.10.26
+ * 
+ * find all classes with a specified annotation.
+ * Note that the core algorithm comes from Internet
  */
-public class ClassUtil implements ResourceLoaderAware {
+public class Scanner implements ResourceLoaderAware {
+
+	/**
+	 * 
+	 */
+	private final List<TypeFilter> filters = new LinkedList<TypeFilter>();
+
+	private ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+
+	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.patternResolver);
 
 	/***********************************************************
 	 * 
-	 * local classes
+	 * Core
 	 *
 	 ************************************************************/
-	private final List<TypeFilter> includeFilters = new LinkedList<TypeFilter>();
-	private final List<TypeFilter> excludeFilters = new LinkedList<TypeFilter>();
-
-	private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(
-			this.resourcePatternResolver);
-
 	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String[] basePackages, Class<? extends Annotation>... annotations) {
-		ClassUtil cs = new ClassUtil();
+		Scanner cs = new Scanner();
 
 		if (annotations != null) {
 			for (Class<? extends Annotation> anno : annotations) {
@@ -55,52 +60,31 @@ public class ClassUtil implements ResourceLoaderAware {
 		}
 
 		Set<Class<?>> classes = new HashSet<Class<?>>();
-		for (String s : basePackages)
+		for (String s : basePackages) {
 			classes.addAll(cs.doScan(s));
+		}
 		return classes;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annotations) {
-		return ClassUtil.scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annotations);
+		return Scanner.scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annotations);
 	}
 
-	public final ResourceLoader getResourceLoader() {
-		return this.resourcePatternResolver;
-	}
-
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
-		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-	}
-
-	public void addIncludeFilter(TypeFilter includeFilter) {
-		this.includeFilters.add(includeFilter);
-	}
-
-	public void addExcludeFilter(TypeFilter excludeFilter) {
-		this.excludeFilters.add(0, excludeFilter);
-	}
-
-	public void resetFilters(boolean useDefaultFilters) {
-		this.includeFilters.clear();
-		this.excludeFilters.clear();
-	}
-
-	public Set<Class<?>> doScan(String basePackage) {
+	private Set<Class<?>> doScan(String basePackage) {
 		Set<Class<?>> classes = new HashSet<Class<?>>();
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
 					+ org.springframework.util.ClassUtils.convertClassNameToResourcePath(
 							SystemPropertyUtils.resolvePlaceholders(basePackage))
 					+ "/**/*.class";
-			Resource[] resources = this.resourcePatternResolver.getResources(packageSearchPath);
+			Resource[] resources = this.patternResolver.getResources(packageSearchPath);
 
 			for (int i = 0; i < resources.length; i++) {
 				Resource resource = resources[i];
 				if (resource.isReadable()) {
 					MetadataReader metadataReader = this.metadataReaderFactory.getMetadataReader(resource);
-					if ((includeFilters.size() == 0 && excludeFilters.size() == 0) || matches(metadataReader)) {
+					if (filters.size() == 0 || matches(metadataReader)) {
 						try {
 							classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
 						} catch (ClassNotFoundException e) {
@@ -113,19 +97,28 @@ public class ClassUtil implements ResourceLoaderAware {
 		}
 		return classes;
 	}
+	
+	/***********************************************************
+	 * 
+	 * Utils
+	 *
+	 ************************************************************/
+	private void addIncludeFilter(TypeFilter includeFilter) {
+		this.filters.add(includeFilter);
+	}
 
-	protected boolean matches(MetadataReader metadataReader) throws IOException {
-		for (TypeFilter tf : this.excludeFilters) {
-			if (tf.match(metadataReader, this.metadataReaderFactory)) {
-				return false;
-			}
-		}
-		for (TypeFilter tf : this.includeFilters) {
+	private boolean matches(MetadataReader metadataReader) throws IOException {
+		for (TypeFilter tf : this.filters) {
 			if (tf.match(metadataReader, this.metadataReaderFactory)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.patternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+	}
+
 }

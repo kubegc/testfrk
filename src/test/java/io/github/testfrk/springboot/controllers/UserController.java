@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero.springboot.controllers;
+package io.github.testfrk.springboot.controllers;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

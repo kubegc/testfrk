@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero.utils;
+package io.github.testfrk.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +11,6 @@ import java.util.Random;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
@@ -45,7 +44,7 @@ public class ValueUtil {
 
 	static Random random = new Random();
 
-	static boolean contain(Class[] clzg, String tag) {
+	static boolean contain(Class<?>[] clzg, String tag) {
 		if (tag == null) {
 			return true;
 		}

@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.newhero;
+package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -19,8 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.newhero.utils.ClassUtil;
-import io.github.newhero.utils.JavaUtil;
+import io.github.testfrk.utils.JavaUtil;
 
 /**
  * 
@@ -54,7 +53,7 @@ public class Analyzer {
 	void doStart(Class<? extends Annotation> requestMappingAnnotation) throws Exception {
 
 		// find all (controller) classes
-		for (Class<?> aClass : ClassUtil.scan(pkgName, requestMappingAnnotation)) {
+		for (Class<?> aClass : Scanner.scan(pkgName, requestMappingAnnotation)) {
 			nameToClass.put(aClass.getName(), aClass);
 
 			// find all methods exported as HttpServices

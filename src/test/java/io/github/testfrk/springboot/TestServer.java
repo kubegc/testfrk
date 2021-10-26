@@ -6,11 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.kubesys.httpfrk.HttpServer;
-
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-
 /**
  * @author wuheng@otcaix.iscas.ac.cn
  * @author xuyuanjia2017@otcaix.iscas.ac.cn

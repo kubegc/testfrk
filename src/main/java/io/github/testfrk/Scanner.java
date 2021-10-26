@@ -31,59 +31,67 @@ import org.springframework.util.SystemPropertyUtils;
  * @since 2021.10.26
  * 
  * find all classes with a specified annotation.
- * Note that the core algorithm comes from Internet
+ * Note that the core algorithm comes from Internet.
+ * I do not known why. 
  */
 public class Scanner implements ResourceLoaderAware {
 
 	/**
 	 * 
 	 */
-	private final List<TypeFilter> filters = new LinkedList<TypeFilter>();
+	private static final List<TypeFilter> filters = new LinkedList<TypeFilter>();
 
-	private ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+	private static ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
 
-	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.patternResolver);
+	private static MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(patternResolver);
 
 	/***********************************************************
 	 * 
 	 * Core
 	 *
 	 ************************************************************/
+	
 	@SuppressWarnings("unchecked")
-	public static Set<Class<?>> scan(String[] basePackages, Class<? extends Annotation>... annotations) {
-		Scanner cs = new Scanner();
-
-		if (annotations != null) {
-			for (Class<? extends Annotation> anno : annotations) {
-				cs.addIncludeFilter(new AnnotationTypeFilter(anno));
+	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annos) {
+		if (basePackages == null) {
+			throw new NullPointerException("basePackages cannot be null");
+		}
+		return Scanner.scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annos);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Set<Class<?>> scan(String[] basePackages, Class<? extends Annotation>... annos) {
+		
+		if (basePackages == null || basePackages.length == 0) {
+			throw new NullPointerException("basePackages cannot be null");
+		}
+		
+		if (annos != null) {
+			for (Class<? extends Annotation> anno : annos) {
+				addIncludeFilter(new AnnotationTypeFilter(anno));
 			}
 		}
 
 		Set<Class<?>> classes = new HashSet<Class<?>>();
 		for (String s : basePackages) {
-			classes.addAll(cs.doScan(s));
+			classes.addAll(doScan(s));
 		}
 		return classes;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annotations) {
-		return Scanner.scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annotations);
-	}
-
-	private Set<Class<?>> doScan(String basePackage) {
+	private static Set<Class<?>> doScan(String basePackage) {
 		Set<Class<?>> classes = new HashSet<Class<?>>();
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
 					+ org.springframework.util.ClassUtils.convertClassNameToResourcePath(
 							SystemPropertyUtils.resolvePlaceholders(basePackage))
 					+ "/**/*.class";
-			Resource[] resources = this.patternResolver.getResources(packageSearchPath);
+			Resource[] resources = patternResolver.getResources(packageSearchPath);
 
 			for (int i = 0; i < resources.length; i++) {
 				Resource resource = resources[i];
 				if (resource.isReadable()) {
-					MetadataReader metadataReader = this.metadataReaderFactory.getMetadataReader(resource);
+					MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
 					if (filters.size() == 0 || matches(metadataReader)) {
 						try {
 							classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
@@ -103,13 +111,13 @@ public class Scanner implements ResourceLoaderAware {
 	 * Utils
 	 *
 	 ************************************************************/
-	private void addIncludeFilter(TypeFilter includeFilter) {
-		this.filters.add(includeFilter);
+	private static void addIncludeFilter(TypeFilter includeFilter) {
+		filters.add(includeFilter);
 	}
 
-	private boolean matches(MetadataReader metadataReader) throws IOException {
-		for (TypeFilter tf : this.filters) {
-			if (tf.match(metadataReader, this.metadataReaderFactory)) {
+	private static boolean matches(MetadataReader metadataReader) throws IOException {
+		for (TypeFilter tf : filters) {
+			if (tf.match(metadataReader, metadataReaderFactory)) {
 				return true;
 			}
 		}
@@ -117,8 +125,8 @@ public class Scanner implements ResourceLoaderAware {
 	}
 
 	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.patternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
-		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+		patternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+		metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 	}
 
 }

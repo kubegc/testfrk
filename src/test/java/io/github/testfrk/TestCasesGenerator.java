@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import io.github.testfrk.Analyzer;
 import io.github.testfrk.Generator;
-import io.github.testfrk.Scanner;
+import io.github.testfrk.ScannerTest;
 import io.github.testfrk.springboot.TestServer;
 
 /**
@@ -25,7 +25,6 @@ public class TestCasesGenerator {
 	public static Class<? extends Annotation> clsName = RequestMapping.class;
 	
     public static void main(String[] args) throws Exception {
-    	Set<Class<?>> clses =  Scanner.scan(pkgName, clsName);
     	Analyzer analyzer = new Analyzer("io.github.newhero.springboot");
     	analyzer.start();
     	

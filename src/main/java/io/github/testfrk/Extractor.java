@@ -127,7 +127,7 @@ public class Extractor {
 			
 			for (String key : labels.keySet()) {
 				try {
-					Object value = Utils.getValue(anno.annotationType(), key);
+					Object value = Utils.getValue(anno, key);
 					return value == labels.get(key) ? anno : null;
 				} catch (NullPointerException e ) {
 					e.printStackTrace();

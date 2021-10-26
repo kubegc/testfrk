@@ -26,6 +26,20 @@ public class Constants {
 	 *
 	 *
 	 *******************************************************/
+	
+	public static String POST_REQUEST_TYPE            = "POST";
+	
+	public static String GET_REQUEST_TYPE             = "GET";
+	
+	public static String PUT_REQUEST_TYPE             = "PUT";
+	
+	public static String DELETE_REQUEST_TYPE          = "DELETE";
+	
+	/*******************************************************
+	 * 
+	 *
+	 *
+	 *******************************************************/
 	public static String SPRINGBOOT_REQUESTMAPPING    = "org.springframework.web.bind.annotation.RequestMapping";
 	
 	public static String DEFAULT_REQUESTMAPPING       = SPRINGBOOT_REQUESTMAPPING;
@@ -68,4 +82,5 @@ public class Constants {
 	public static String SPRINGBOOT_URL               = "value"; 
 	
 	public static String DEFAULT_URL                  = SPRINGBOOT_URL;
+	
 }

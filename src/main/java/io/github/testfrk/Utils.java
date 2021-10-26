@@ -6,11 +6,6 @@ package io.github.testfrk;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * 
@@ -24,17 +19,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class Utils {
 
-	public static Object getValue(Class<? extends Annotation> anno, String key) throws NoSuchMethodException,
+	public static Object getValue(Annotation anno, String key) throws NoSuchMethodException,
 			SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-		Method m = anno.getMethod(key);
+		Method m = anno.annotationType().getMethod(key);
 		Object value = m.invoke(anno);
 		if (value.getClass().isArray()) {
 			Object[] v = (Object[]) value;
 			return v[0];
-		} else {
-			return value;
-		}
+		} 
+		return value;
 	}
 
 }

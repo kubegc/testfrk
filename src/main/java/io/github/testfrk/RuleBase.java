@@ -23,12 +23,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class RuleBase {
 
-	public static Map<String, List<String>> nameToUrlGroup     = new HashMap<>();
+	public static Map<String, List<String>> nameToUrls         = new HashMap<>();
 
 	public static Map<String, Method>       urlToMethod        = new HashMap<>();
 	
 	public static Map<String, String>       urlToReqType       = new HashMap<>();
-
-	public static Map<String, ObjectNode>   urlToJsonData      = new HashMap<>();
 
 }

@@ -4,6 +4,7 @@
 package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +26,9 @@ public class Extractor {
 		return extract(clses, anno, null);
 	}
 	
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno, Map<String, String> filters) {
+	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno, Map<String, Object> labels) {
 		Map<String, List<Method>> map = new HashMap<>();
+		
 		if (clses == null) {
 			throw new NullPointerException("clses cannot be null");
 		}
@@ -38,31 +40,58 @@ public class Extractor {
 				continue;
 			}
 			
-			map.put(key, extractValues(anno, c, filters));
+			map.put(key, extractValues(anno, c, labels));
 		}
 		
 		return map;
 	}
 
-	private static List<Method> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, String> filters) {
+	private static List<Method> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, Object> labels) {
 		
 		List<Method> values = new ArrayList<>();
 		
 		for (Method m : c.getDeclaredMethods()) {
-			if (filterViaAnnotation(m, anno) != null) {
+			if (filterViaAnnotation(m, anno, labels) != null) {
 				values.add(m);
 			}
 		}
 		return values;
 	}
 	
-	private static Method filterViaAnnotation(Method m, Class<? extends Annotation> anno) {
+	private static Method filterViaAnnotation(Method m, Class<? extends Annotation> anno, Map<String, Object> labels) {
 		if (anno == null) {
 			return m;
 		}
 		
 		Annotation r = m.getAnnotation(anno);
-		return r == null ? null : m;
+		return filterViaLabels(r, labels) == null ? null : m;
+	}
+	
+	private static Annotation filterViaLabels(Annotation anno, Map<String, Object> labels) {
+		if (labels != null && labels != null && labels.size() != 0) {
+			for (String key : labels.keySet()) {
+				try {
+					Class<? extends Annotation> annotationType = anno.annotationType();
+					Method m = annotationType.getMethod(key);
+					Object value = m.invoke(anno);
+					if (value.getClass().isArray()) {
+						Object[] v = (Object[]) value;
+						return v[0] == labels.get(key) ? anno : null;
+					} else {
+						return value == labels.get(key) ? anno : null;
+					}
+				} catch (NullPointerException e ) {
+				} catch (NoSuchMethodException e) {
+				} catch (SecurityException e) {
+				} catch (IllegalAccessException e) {
+				} catch (IllegalArgumentException e) {
+				} catch (InvocationTargetException e) {
+				}
+				return null;
+			}
+		}
+		
+		return anno;
 	}
 	
 }

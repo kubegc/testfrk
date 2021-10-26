@@ -33,6 +33,8 @@ import org.springframework.util.SystemPropertyUtils;
  * find all classes with a specified annotation.
  * Note that the core algorithm comes from Internet.
  * I do not known why. 
+ * 
+ * Do not modify.
  */
 public class Scanner implements ResourceLoaderAware {
 

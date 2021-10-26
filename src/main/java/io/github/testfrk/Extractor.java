@@ -25,6 +25,35 @@ public class Extractor {
 
 	/**
 	 * @param clses          see Scanner.scan
+	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 */
+	@SuppressWarnings("unchecked")
+	public static Map<String, List<Method>> extract(Set<Class<?>> clses) {
+		try {
+			return extract(clses, (Class<? extends Annotation>) 
+					Class.forName(Constants.DEFAULT_REQUESTMAPPING), null);
+		} catch (ClassNotFoundException e) {
+		}
+		return new HashMap<>();
+	}
+	
+	/**
+	 * @param clses          see Scanner.scan
+	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
+	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 */
+	@SuppressWarnings("unchecked")
+	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Map<String, Object> labels) {
+		try {
+			return extract(clses, (Class<? extends Annotation>) 
+					Class.forName(Constants.DEFAULT_REQUESTMAPPING), labels);
+		} catch (ClassNotFoundException e) {
+		}
+		return new HashMap<>();
+	}
+	
+	/**
+	 * @param clses          see Scanner.scan
 	 * @param anno           e.g, RequestMapping or null 
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 */
@@ -38,7 +67,10 @@ public class Extractor {
 	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 */
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno, Map<String, Object> labels) {
+	public static Map<String, List<Method>> extract(Set<Class<?>> clses, 
+			Class<? extends Annotation> anno, Map<String, Object> labels) {
+		
+		
 		Map<String, List<Method>> map = new HashMap<>();
 		
 		// no class
@@ -88,23 +120,27 @@ public class Extractor {
 	
 	private static Annotation filterViaLabels(Annotation anno, Map<String, Object> labels) {
 		if (labels != null && labels != null && labels.size() != 0) {
+			
+			if (labels.size() > 1) {
+				throw new UnsupportedOperationException("TODO. support mutiple labels simultaneously later.");
+			}
+			
 			for (String key : labels.keySet()) {
 				try {
-					Class<? extends Annotation> annotationType = anno.annotationType();
-					Method m = annotationType.getMethod(key);
-					Object value = m.invoke(anno);
-					if (value.getClass().isArray()) {
-						Object[] v = (Object[]) value;
-						return v[0] == labels.get(key) ? anno : null;
-					} else {
-						return value == labels.get(key) ? anno : null;
-					}
+					Object value = Utils.getValue(anno.annotationType(), key);
+					return value == labels.get(key) ? anno : null;
 				} catch (NullPointerException e ) {
+					e.printStackTrace();
 				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
 				} catch (SecurityException e) {
+					e.printStackTrace();
 				} catch (IllegalAccessException e) {
+					e.printStackTrace();
 				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
 				} catch (InvocationTargetException e) {
+					e.printStackTrace();
 				}
 				return null;
 			}

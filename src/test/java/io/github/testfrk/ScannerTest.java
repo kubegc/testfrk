@@ -17,6 +17,7 @@ public class ScannerTest {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
+		System.out.println(Scanner.scan("io.github.testfrk"));
 		System.out.println(Scanner.scan("io.github.testfrk", Component.class));
 	}
 

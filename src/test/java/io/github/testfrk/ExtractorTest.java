@@ -3,13 +3,6 @@
  */
 package io.github.testfrk;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 /**
  * 
  * @author wuheng@iscas.ac.cn
@@ -20,18 +13,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 public class ExtractorTest {
 
-	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		Map<String, Object> filter = new HashMap<>();
-		filter.put("method", RequestMethod.POST);
+		System.out.println(Extractor.extract(
+				Scanner.scan("io.github.testfrk")));
 		
 		System.out.println(Extractor.extract(
-				Scanner.scan("io.github.testfrk", Component.class), 
-				RequestMapping.class));
-		
-		System.out.println(Extractor.extract(
-				Scanner.scan("io.github.testfrk", Component.class), 
-				RequestMapping.class, filter));
+				Scanner.scan("io.github.testfrk"), 
+				Constants.DEFAULT_POST));
 	}
 
 }

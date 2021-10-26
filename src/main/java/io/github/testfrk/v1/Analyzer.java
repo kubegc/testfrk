@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.testfrk;
+package io.github.testfrk.v1;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.github.testfrk.Scanner;
 import io.github.testfrk.utils.JavaUtil;
 
 /**

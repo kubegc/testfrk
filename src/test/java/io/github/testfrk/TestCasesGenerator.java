@@ -8,10 +8,10 @@ import java.util.Set;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import io.github.testfrk.Analyzer;
-import io.github.testfrk.Generator;
 import io.github.testfrk.ScannerTest;
 import io.github.testfrk.springboot.TestServer;
+import io.github.testfrk.v1.Analyzer;
+import io.github.testfrk.v1.Generator;
 
 /**
  * 

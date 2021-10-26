@@ -54,11 +54,20 @@ public class Scanner implements ResourceLoaderAware {
 	 ************************************************************/
 	
 	@SuppressWarnings("unchecked")
+	public static Set<Class<?>> scan(String basePackages) {
+		try {
+			return scan(basePackages, (Class<? extends Annotation>) Class.forName(Constants.DEFAULT_REQUESTMAPPING));
+		} catch (ClassNotFoundException e) {
+		}
+		return new HashSet<>();
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annos) {
 		if (basePackages == null) {
 			throw new NullPointerException("basePackages cannot be null");
 		}
-		return Scanner.scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annos);
+		return scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annos);
 	}
 	
 	@SuppressWarnings("unchecked")

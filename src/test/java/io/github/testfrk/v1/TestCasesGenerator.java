@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.testfrk;
+package io.github.testfrk.v1;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;

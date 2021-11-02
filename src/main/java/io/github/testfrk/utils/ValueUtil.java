@@ -10,7 +10,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -19,6 +22,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
+
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -57,26 +64,76 @@ public class ValueUtil {
 		return getPrimitiveValues(cls, f.getType().getName(), f.getName(), usedAnnotations(f.getAnnotations(), tag));
 	}
 	
+	@SuppressWarnings("deprecation")
 	public ArrayNode getPrimitiveValues(String cls, String type, String name, Annotation[] as) {
 		ArrayNode list = new ObjectMapper().createArrayNode();
 		if (type.equals(String.class.getName())) {
-			Annotation[] va = valuesAnnotations(as);
-			if(va.length == 0) {
-				String trueKey = cls + ".true." + name;
-				String trueVal = props.getProperty(trueKey);
-				if (trueVal != null) {
-					list.add(trueVal);
+			Map<String, Annotation> va = valuesAnnotations(as);
+			if(va.size() == 0) {
+				addValue(list, cls + ".true." + name);
+				addValue(list, cls + ".false." + name);
+			} else {
+				Length len = (Length) va.get("org.hibernate.validator.constraints.Length");
+				if (len != null) {
+					list.add(getStringValue(len.max() - 1));
+					list.add(getStringValue(len.max() + 1));
+					list.add(getStringValue(len.min() - 1));
+					return list;
 				}
-				String falseKey = cls + ".true." + name;
-				String fasleVal = props.getProperty(falseKey);
-				if (fasleVal != null) {
-					list.add(fasleVal);
+				
+				Pattern pa = (Pattern) va.get("javax.validation.constraints.Pattern");
+				if (pa != null) {
+					int max = len(pa.regexp(), ",", "}");
+					int min = len(pa.regexp(), "{", ",");
+					list.add(getStringValue(max - 1));
+					list.add(getStringValue(max + 1));
+					list.add(getStringValue(min - 1));
+					return list;
 				}
+				
+				Email em = (Email) va.get("org.hibernate.validator.constraints.Email");
+				if (em != null) {
+					list.add("test@123.com");
+					list.add("test@123");
+					return list;
+				}
+				
+				NotBlank nb = (NotBlank) va.get("org.hibernate.validator.constraints.NotBlank");
+				if (nb != null) {
+					list.add("T^&S)DS");
+					list.add("");
+					return list;
+				}
+				
+				Null nu = (Null) va.get("javax.validation.constraints.Null");
+				if (nu != null) {
+					list.add("");
+					list.add("asdd");
+					return list;
+				}
+				
+				addValue(list, cls + ".true." + name);
+				addValue(list, cls + ".false." + name);
 			}
-			System.out.println("---" + name);
-			print(va);
+			
+			print(va.values());
 		}
 		return list;
+	}
+	
+	public static int len(String str, String prefix, String postfix) {
+		int stx = str.lastIndexOf(prefix);
+		int edx = str.lastIndexOf(postfix);
+		return Integer.parseInt(str.substring(stx + 1, edx).trim());
+	}
+	
+	public static void addValue(ArrayNode list, String key) {
+		String val = props.getProperty(key);
+		if (val != null) {
+			list.add(val);
+		} else {
+			System.out.println("config " + key + " in conf/defvalue.conf");
+		}
 	}
 	
 	public ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception {
@@ -111,7 +168,7 @@ public class ValueUtil {
 	public static Annotation[] usedAnnotations(Annotation[] as, String tag) throws Exception {
 		
 		List<Annotation> list = new ArrayList<>();
-		for (Annotation a: valuesAnnotations(as)) {
+		for (Annotation a: valuesAnnotations(as).values()) {
 			Method m = a.annotationType().getDeclaredMethod("groups");
 			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
 			
@@ -132,7 +189,7 @@ public class ValueUtil {
 	
 	public static boolean validParameter(Annotation[] as, String tag) throws Exception {
 	
-		for (Annotation a : valuesAnnotations(as)) {
+		for (Annotation a : valuesAnnotations(as).values()) {
 			Method m = a.annotationType().getDeclaredMethod("groups");
 			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
 			
@@ -160,23 +217,41 @@ public class ValueUtil {
 	}
 	
 	
-	public static Annotation[] valuesAnnotations(Annotation[] as) {
+	public static Map<String, Annotation> valuesAnnotations(Annotation[] as) {
+		Map<String, Annotation> list = new HashMap<>();
 		if (as == null) {
-			return new Annotation[] {};
+			return list;
 		}
 		
-		List<Annotation> list = new ArrayList<>();
 		for (Annotation a: as) {
 			for (String c : cstas) {
 				if (a.annotationType().getTypeName().contains(c)) {
-					list.add(a);
+					list.put(a.annotationType().getTypeName(), a);
 				}
 			}
 		}
-		return list.toArray(new Annotation[] {});
+		return list;
+	}
+	
+	public static String getStringValue(int len) {
+		if (len <= 0) {
+			return null;
+		}
+		
+		char[] chArr = new char[len];
+		for (int i = 0; i < len; i++) {
+			chArr[i] = codes[random.nextInt(len)%codes.length];
+		}
+		return new String(chArr);
 	}
 	
 	public static void print(Annotation[] as) {
+		for (Annotation a : as) {
+			System.out.println(a);
+		}
+	}
+	
+	public static void print(Collection<Annotation> as) {
 		for (Annotation a : as) {
 			System.out.println(a);
 		}

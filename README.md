@@ -1,2 +1,2 @@
-# newhero-testfrk
-Generating testcases framework for newhero
+# testfrk
+Generating testcases framework

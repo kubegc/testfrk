@@ -117,14 +117,14 @@ public class ValueUtil {
 				addValue(list, cls + ".true." + name);
 				addValue(list, cls + ".false." + name);
 			}
-		} else if (type.equals("java.lang.Integer")) {
+		} else if (type.equals("java.lang.Integer") || type.equals("int")) {
 			Map<String, Annotation> va = valuesAnnotations(as);
 			if(va.size() == 0) {
 				addValue(list, cls + ".true." + name);
 				addValue(list, cls + ".false." + name);
 			} else {
 				Min minDesc = (Min) va.get("javax.validation.constraints.Min");
-				Min maxDesc = (Min) va.get("javax.validation.constraints.Max");
+				Max maxDesc = (Max) va.get("javax.validation.constraints.Max");
 				int min = (int) ((minDesc == null) ? Integer.MIN_VALUE : minDesc.value());
 				int max = (int) ((maxDesc == null) ? Integer.MAX_VALUE : maxDesc.value());
 				list.add(max - 1);

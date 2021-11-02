@@ -3,6 +3,8 @@
  */
 package io.github.testfrk;
 
+import io.github.testfrk.springboot.TestServer;
+
 /**
  * 
  * @author wuheng@iscas.ac.cn
@@ -11,10 +13,10 @@ package io.github.testfrk;
  * find all classes with a specified annotation.
  * Note that the core algorithm comes from Internet
  */
-public class AnalyzerTest {
+public class GeneratorTest {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println(new Analyzer("io.github.testfrk.springboot").analyse().toPrettyString());
+		new Generator("io.github.frks", TestServer.class, new Analyzer("io.github.testfrk.springboot").analyse());
 	}
 
 }

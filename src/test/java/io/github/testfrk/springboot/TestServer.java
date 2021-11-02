@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
  * 
  */
 @ComponentScan(basePackages = {
-		"io.github.newhero.springboot.controllers" })
+		"io.github.testfrk.springboot.controllers" })
 @SpringBootApplication
 @EnableAutoConfiguration
 @Configuration

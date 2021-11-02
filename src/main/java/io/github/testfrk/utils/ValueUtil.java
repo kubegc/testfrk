@@ -187,7 +187,7 @@ public class ValueUtil {
 			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
 			
 			// from config case
-			if (as.length == 0 && tag == null) {
+			if (vs.length == 0 && tag == null) {
 				list.add(a);
 			}
 			

@@ -75,6 +75,7 @@ public class Analyzer {
 				} else {
 					case2_content.set(key2, array2.get(0));
 				}
+				++j;
 			}
 			case2.set(prefix + "_invalid_" + name, case2_content);
 			list.add(case2);

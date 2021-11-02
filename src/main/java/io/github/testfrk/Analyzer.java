@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.Iterator;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,6 +42,47 @@ public class Analyzer {
 				Scanner.scan(pkgName)));
 	}
 	
+	/**
+	 * modify by youself
+	 */
+	public static ArrayNode testcases(String prefix, ObjectNode node) {
+		
+		ArrayNode list = new ObjectMapper().createArrayNode();
+		
+		ObjectNode case1 = new ObjectMapper().createObjectNode();
+		ObjectNode case1_content = new ObjectMapper().createObjectNode();
+		Iterator<String> iter = node.fieldNames();
+		while(iter.hasNext()) {
+			String key = iter.next();
+			ArrayNode array = (ArrayNode) node.get(key);
+			case1_content.set(key, array.get(0));
+		}
+		case1.set(prefix + "_valid_all", case1_content);
+		list.add(case1);
+		
+		for (int i = 0; i < node.size(); i++) {
+			ObjectNode case2 = new ObjectMapper().createObjectNode();
+			ObjectNode case2_content = new ObjectMapper().createObjectNode();
+			Iterator<String> iter2 = node.fieldNames();
+			int j = 0;
+			String name = "";
+			while(iter2.hasNext()) {
+				String key2 = iter2.next();
+				ArrayNode array2 = (ArrayNode) node.get(key2);
+				if (j == i) {
+					name = key2;
+					case2_content.set(key2, array2.get(1));
+				} else {
+					case2_content.set(key2, array2.get(0));
+				}
+			}
+			case2.set(prefix + "_invalid_" + name, case2_content);
+			list.add(case2);
+		}
+		 
+		return list;
+	}
+	
 	public JsonNode analyse() {
 		ObjectNode node = new ObjectMapper().createObjectNode();
 		
@@ -56,6 +98,7 @@ public class Analyzer {
 			} catch (Exception e) {
 				System.out.println("unsupport void static " + "analyse" + RuleBase.urlToReqType.get(url) 
 							+ "(String url, Method m)");
+				e.printStackTrace();
 			} 
 		}
 		
@@ -67,12 +110,11 @@ public class Analyzer {
 	 * 请根据项目实施要求，进行二次改造
 	 */
 	public ArrayNode analysePOST(String url, Method m) throws Exception {
-		System.out.println("---" + url);
 		if (m.getParameterCount() == 0) {
 			return new ObjectMapper().createArrayNode();
 		}
 		
-		ObjectNode node = new ObjectMapper().createObjectNode();
+		ObjectNode params = new ObjectMapper().createObjectNode();
 		for (int i = 0 ; i < m.getParameterCount(); i++) {
 			Parameter p = m.getParameters()[i];
 			Type t = m.getGenericParameterTypes()[i];
@@ -85,7 +127,7 @@ public class Analyzer {
 				assertNotNull(url, p, rp, RequestParam.class);
 				String name = rp.value() == null || rp.value().length() == 0 
 											? p.getName() : rp.value(); 
-				node.set(name, valueUtil.getPrimitiveValues(m.getName(), p));
+				params.set(name, valueUtil.getPrimitiveValues(m.getName(), p));
 			} 
 			// 这些情况暂时不处理
 			else if (JavaUtil.isList(t.getTypeName()) 
@@ -97,16 +139,14 @@ public class Analyzer {
 			else {
 				RequestBody rb = p.getAnnotation(RequestBody.class);
 				assertNotNull(url, p, rb, RequestBody.class);
-				node = valueUtil.getObjectValues(ValueUtil
+				params = valueUtil.getObjectValues(ValueUtil
 						.getClassName(t.getTypeName()), v.value());
 			}
 		}
 		
-		ArrayNode list = new ObjectMapper().createArrayNode();
-		return list;
+		return testcases(url.substring(url.lastIndexOf("/") + 1), params);
 	}
 
-	
 	public static void assertNotNull(String url, Parameter p, Annotation a, Class<?> ac) {
 		if (a == null) {
 			throw new RuntimeException("the parameter " + p.getName() + " in " + url 

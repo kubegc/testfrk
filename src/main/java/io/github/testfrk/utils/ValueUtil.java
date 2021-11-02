@@ -37,10 +37,13 @@ import com.github.kubesys.httpfrk.utils.JavaUtil;
  * @author wuheng@iscas.ac.cn
  * @since 2021.6.29
  */
+@SuppressWarnings("deprecation")
 public class ValueUtil {
 
 	
-	protected static String[]   cstas = new String[]{"org.hibernate.validator.constraints", "javax.validation.constraints"};
+	protected static String[]   cstas = new String[]{
+								"org.hibernate.validator.constraints", 
+								"javax.validation.constraints"};
 	
 	protected static Properties props = new Properties();
 	
@@ -64,7 +67,6 @@ public class ValueUtil {
 		return getPrimitiveValues(cls, f.getType().getName(), f.getName(), usedAnnotations(f.getAnnotations(), tag));
 	}
 	
-	@SuppressWarnings("deprecation")
 	public ArrayNode getPrimitiveValues(String cls, String type, String name, Annotation[] as) {
 		ArrayNode list = new ObjectMapper().createArrayNode();
 		if (type.equals(String.class.getName())) {
@@ -101,13 +103,13 @@ public class ValueUtil {
 				NotBlank nb = (NotBlank) va.get("org.hibernate.validator.constraints.NotBlank");
 				if (nb != null) {
 					list.add("T^&S)DS");
-					list.add("");
+					list.addNull();
 					return list;
 				}
 				
 				Null nu = (Null) va.get("javax.validation.constraints.Null");
 				if (nu != null) {
-					list.add("");
+					list.addNull();
 					list.add("asdd");
 					return list;
 				}
@@ -115,8 +117,20 @@ public class ValueUtil {
 				addValue(list, cls + ".true." + name);
 				addValue(list, cls + ".false." + name);
 			}
-			
-			print(va.values());
+		} else if (type.equals("java.lang.Integer")) {
+			Map<String, Annotation> va = valuesAnnotations(as);
+			if(va.size() == 0) {
+				addValue(list, cls + ".true." + name);
+				addValue(list, cls + ".false." + name);
+			} else {
+				Min minDesc = (Min) va.get("javax.validation.constraints.Min");
+				Min maxDesc = (Min) va.get("javax.validation.constraints.Max");
+				int min = (int) ((minDesc == null) ? Integer.MIN_VALUE : minDesc.value());
+				int max = (int) ((maxDesc == null) ? Integer.MAX_VALUE : maxDesc.value());
+				list.add(max - 1);
+				list.add(max == Integer.MAX_VALUE ? max : max + 1);
+				list.add(min == Integer.MIN_VALUE ? min : min - 1);
+			}
 		}
 		return list;
 	}
@@ -153,7 +167,7 @@ public class ValueUtil {
 			else if (JavaUtil.isList(f.getGenericType().getTypeName()) 
 					|| JavaUtil.isSet(f.getGenericType().getTypeName())
 					|| JavaUtil.isMap(f.getGenericType().getTypeName())) {
-				System.out.println("ignore, -" + f.getGenericType().getTypeName() + " " + f.getName());
+				System.out.println("ignore " + f.getGenericType().getTypeName() + " " + f.getName());
 //				throw new RuntimeException("Unsupport parameters types: list, Set and Map");
 			} 
 			// 如果是Java对象，必须包含RequestBody标签

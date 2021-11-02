@@ -31,6 +31,7 @@ public class Analyzer {
 
 	protected final ValueUtil valueUtil;
 	
+	protected final String pkgName;
 
 	public Analyzer(String pkgName) throws Exception {
 		this(new ValueUtil(), pkgName);
@@ -38,10 +39,15 @@ public class Analyzer {
 	
 	public Analyzer(ValueUtil valueUtil, String pkgName) throws Exception {
 		this.valueUtil = valueUtil;
+		this.pkgName   = pkgName;
 		Recorder.record(Extractor.extract(
 				Scanner.scan(pkgName)));
 	}
 	
+	public String getPkgName() {
+		return pkgName;
+	}
+
 	/**
 	 * modify by youself
 	 */

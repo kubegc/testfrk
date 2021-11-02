@@ -4,7 +4,7 @@
     @Test
     public void #NAME#Test() throws Exception {
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .post(#METHON#_PATH)
+                .post(#METHOD#_PATH)
                 .content(#NAME#_DATA)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);

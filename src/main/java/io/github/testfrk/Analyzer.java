@@ -30,10 +30,20 @@ import io.github.testfrk.values.DefaultValueImpl;
  */
 public class Analyzer {
 
+	/**
+	 * value
+	 */
 	protected final AbstractValue valueUtil;
 	
+	/**
+	 * pkgName
+	 */
 	protected final String pkgName;
 
+	/**
+	 * @param pkgName     p
+	 * @throws Exception
+	 */
 	public Analyzer(String pkgName) throws Exception {
 		this(new DefaultValueImpl(), pkgName);
 	}
@@ -52,8 +62,9 @@ public class Analyzer {
 	/**
 	 * modify by youself
 	 */
-	public static ArrayNode testcases(String prefix, ObjectNode node) {
+	public static ArrayNode testcases(String url, ObjectNode node) {
 		
+		String prefix = url.substring(url.lastIndexOf("/") + 1);
 		ArrayNode list = new ObjectMapper().createArrayNode();
 		
 		ObjectNode case1 = new ObjectMapper().createObjectNode();
@@ -64,7 +75,7 @@ public class Analyzer {
 			ArrayNode array = (ArrayNode) node.get(key);
 			case1_content.set(key, array.get(0));
 		}
-		case1.set(prefix + "_valid_all", case1_content);
+		case1.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" + prefix + "_valid_all", case1_content);
 		list.add(case1);
 		
 		for (int i = 0; i < node.size(); i++) {
@@ -84,7 +95,7 @@ public class Analyzer {
 				}
 				++j;
 			}
-			case2.set(prefix + "_invalid_" + name, case2_content);
+			case2.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" + prefix + "_invalid_" + name, case2_content);
 			list.add(case2);
 		}
 		 
@@ -152,7 +163,7 @@ public class Analyzer {
 			}
 		}
 		
-		return testcases(url.substring(url.lastIndexOf("/") + 1), params);
+		return testcases(url, params);
 	}
 
 	public static void assertNotNull(String url, Parameter p, Annotation a, Class<?> ac) {

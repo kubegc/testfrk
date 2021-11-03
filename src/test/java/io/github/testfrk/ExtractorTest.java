@@ -13,7 +13,7 @@ package io.github.testfrk;
  */
 public class ExtractorTest {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		System.out.println(Extractor.extract(
 				Scanner.scan("io.github.testfrk")));
 		

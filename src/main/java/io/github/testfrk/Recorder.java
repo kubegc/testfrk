@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.github.testfrk.Extractor.MethodAndType;
+
 /**
  * 
  * @author wuheng@iscas.ac.cn
@@ -25,18 +27,9 @@ public class Recorder {
 	 * @param map        see Extractor.extract
 	 * @throws Exception 
 	 */
-	public static void record(Map<String, List<Method>> map) throws Exception {
-		record(map, Constants.POST_REQUEST_TYPE, Constants.DEFAULT_REQUESTMAPPING, Constants.DEFAULT_URL);
+	public static void record(Map<String, List<MethodAndType>> map) throws Exception {
+		record(map, Constants.DEFAULT_REQUESTMAPPING, Constants.DEFAULT_URL);
 	}
-	
-	/**
-	 * @param map        see Extractor.extract
-	 * @throws Exception 
-	 */
-	public static void record(Map<String, List<Method>> map, String reqType) throws Exception {
-		record(map, reqType, Constants.DEFAULT_REQUESTMAPPING, Constants.DEFAULT_URL);
-	}
-	
 	
 	/**
 	 * @param map         see Extractor.extract
@@ -44,7 +37,7 @@ public class Recorder {
 	 * @param annoUrlTag  annotation's url method
 	 * @throws Exception
 	 */
-	public static void record(Map<String, List<Method>> map, String reqType, String annoClass, String annoUrlTag) throws Exception {
+	public static void record(Map<String, List<MethodAndType>> map, String annoClass, String annoUrlTag) throws Exception {
 		
 		if (map == null || map.size() == 0 || annoClass == null || annoUrlTag == null) {
 			throw new NullPointerException("map, or annoClass, or annoUrlTag cannot be null");
@@ -53,12 +46,12 @@ public class Recorder {
 		for (String c : map.keySet()) {
 			String prefix = getPrefix(annoClass, annoUrlTag, c);
 			List<String> urls = new ArrayList<>();
-			for (Method m : map.get(c)) {
-				String postfix = getPostfix(annoClass, annoUrlTag, m);
+			for (MethodAndType m : map.get(c)) {
+				String postfix = getPostfix(annoClass, annoUrlTag, m.getMethod());
 				String url = toUrl(prefix, postfix);
 				urls.add(url);
-				RuleBase.urlToMethod.put(url, m);
-				RuleBase.urlToReqType.put(url, reqType);
+				RuleBase.urlToMethod.put(url, m.getMethod());
+				RuleBase.urlToReqType.put(url, m.getType());
 			}
 			RuleBase.nameToUrls.put(c, urls);
 		}

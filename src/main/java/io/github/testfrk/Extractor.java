@@ -24,8 +24,9 @@ public class Extractor {
 	/**
 	 * @param clses          see Scanner.scan
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception 
 	 */
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses) {
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses) throws Exception {
 		return extract(clses, Constants.DEFAULT_ALL);
 	}
 	
@@ -33,9 +34,10 @@ public class Extractor {
 	 * @param clses          see Scanner.scan
 	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Map<String, Object> labels) {
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, Map<String, Object> labels) throws Exception {
 		try {
 			return extract(clses, (Class<? extends Annotation>) 
 					Class.forName(Constants.DEFAULT_REQUESTMAPPING), labels);
@@ -48,8 +50,9 @@ public class Extractor {
 	 * @param clses          see Scanner.scan
 	 * @param anno           e.g, RequestMapping or null 
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception 
 	 */
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno) {
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno) throws Exception {
 		return extract(clses, anno, new HashMap<>());
 	}
 	
@@ -58,12 +61,13 @@ public class Extractor {
 	 * @param anno           e.g, RequestMapping or null 
 	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception 
 	 */
-	public static Map<String, List<Method>> extract(Set<Class<?>> clses, 
-			Class<? extends Annotation> anno, Map<String, Object> labels) {
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, 
+			Class<? extends Annotation> anno, Map<String, Object> labels) throws Exception {
 		
 		
-		Map<String, List<Method>> map = new HashMap<>();
+		Map<String, List<MethodAndType>> map = new HashMap<>();
 		
 		// no class
 		if (clses == null) {
@@ -92,16 +96,20 @@ public class Extractor {
 	 * @param c             class
 	 * @param labels        labels
 	 * @return the methods with a specified annotation and labels
+	 * @throws Exception 
 	 */
-	private static List<Method> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, Object> labels) {
+	private static List<MethodAndType> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, Object> labels) throws Exception {
 		
-		List<Method> values = new ArrayList<>();
+		List<MethodAndType> values = new ArrayList<>();
 		
 		// for each method
 		for (Method m : c.getDeclaredMethods()) {
 			// just focus on the method has a specified annotation and labels
 			if (filterViaAnnotation(m, anno, labels) != null) {
-				values.add(m);
+				Object value = Utils.getValue(
+						m.getAnnotation(anno), labels.keySet()
+						.toArray(new String[] {})[0]);
+				values.add(new MethodAndType(value.toString(), m));
 			}
 		}
 		return values;
@@ -125,6 +133,7 @@ public class Extractor {
 		return filterViaLabels(r, labels) == null ? null : m;
 	}
 	
+	
 	/**
 	 * @param anno         annotation
 	 * @param labels       labels
@@ -146,4 +155,35 @@ public class Extractor {
 		return null;
 	}
 	
+	/**
+	 * @author wuheng@iscas.ac.cn
+	 * @since  2021.11.3
+	 *
+	 */
+	public static class MethodAndType {
+		
+		protected final String type;
+		
+		protected final Method method;
+
+		public MethodAndType(String type, Method method) {
+			super();
+			this.type = type;
+			this.method = method;
+		}
+
+		public String getType() {
+			return type;
+		}
+
+		public Method getMethod() {
+			return method;
+		}
+
+		@Override
+		public String toString() {
+			return type + ":" + method;
+		}
+
+	}
 }

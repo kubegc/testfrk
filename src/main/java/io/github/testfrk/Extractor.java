@@ -4,7 +4,6 @@
 package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,19 +21,12 @@ import java.util.Set;
  */
 public class Extractor {
 
-
 	/**
 	 * @param clses          see Scanner.scan
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 */
-	@SuppressWarnings("unchecked")
 	public static Map<String, List<Method>> extract(Set<Class<?>> clses) {
-		try {
-			return extract(clses, (Class<? extends Annotation>) 
-					Class.forName(Constants.DEFAULT_REQUESTMAPPING), null);
-		} catch (ClassNotFoundException e) {
-		}
-		return new HashMap<>();
+		return extract(clses, Constants.DEFAULT_POST);
 	}
 	
 	/**
@@ -58,7 +50,7 @@ public class Extractor {
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 */
 	public static Map<String, List<Method>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno) {
-		return extract(clses, anno, null);
+		return extract(clses, anno, new HashMap<>());
 	}
 	
 	/**
@@ -75,24 +67,32 @@ public class Extractor {
 		
 		// no class
 		if (clses == null) {
-			throw new NullPointerException("clses cannot be null");
+			throw new NullPointerException("parameter clses cannot be null, see Scanner.scan");
 		}
 		
 		// for each class
 		for (Class<?> c : clses) {
-			String key = c.getName();
-			// ignore this class because of be analysed 
-			if (map.containsKey(key)) {
+
+			// classname
+			String cn = c.getName();
+			// ignore this class because of be analyzed 
+			if (map.containsKey(cn)) {
 				continue;
 			}
 			
-			// put to mapper
-			map.put(key, extractValues(anno, c, labels));
+			// classname-methods mapping
+			map.put(cn, extractValues(anno, c, labels == null ? new HashMap<>() : labels));
 		}
 		
 		return map;
 	}
 
+	/**
+	 * @param anno          annotations   
+	 * @param c             class
+	 * @param labels        labels
+	 * @return the methods with a specified annotation and labels
+	 */
 	private static List<Method> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, Object> labels) {
 		
 		List<Method> values = new ArrayList<>();
@@ -107,8 +107,15 @@ public class Extractor {
 		return values;
 	}
 	
+	/**
+	 * @param m            method
+	 * @param anno         annotation
+	 * @param labels       labels
+	 * @return  method
+	 */
 	// annotation and labels can be null
 	private static Method filterViaAnnotation(Method m, Class<? extends Annotation> anno, Map<String, Object> labels) {
+		
 		if (anno == null) {
 			return m;
 		}
@@ -118,35 +125,27 @@ public class Extractor {
 		return filterViaLabels(r, labels) == null ? null : m;
 	}
 	
+	/**
+	 * @param anno         annotation
+	 * @param labels       labels
+	 * @return 
+	 */
 	private static Annotation filterViaLabels(Annotation anno, Map<String, Object> labels) {
-		if (labels != null && labels != null && labels.size() != 0) {
-			
-			if (labels.size() > 1) {
-				throw new UnsupportedOperationException("TODO. support mutiple labels simultaneously later.");
-			}
-			
-			for (String key : labels.keySet()) {
-				try {
-					Object value = Utils.getValue(anno, key);
-					return value == labels.get(key) ? anno : null;
-				} catch (NullPointerException e ) {
-					e.printStackTrace();
-				} catch (NoSuchMethodException e) {
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					e.printStackTrace();
-				}
-				return null;
+		
+		if (labels.size() > 1) {
+			throw new UnsupportedOperationException("TODO. support mutiple labels simultaneously later.");
+		}
+		
+		for (String func : labels.keySet()) {
+			try {
+				Object value = Utils.getValue(anno, func);
+				return value == labels.get(func) ? anno : null;
+			} catch (Exception e) {
+				
 			}
 		}
 		
-		return anno;
+		return null;
 	}
 	
 }

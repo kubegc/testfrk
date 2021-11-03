@@ -4,7 +4,6 @@
 package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -12,17 +11,13 @@ import java.lang.reflect.Method;
  * @author wuheng@iscas.ac.cn
  * @since 2021.10.26
  * 
- *        find all classes with a specified annotation. Note that the core
- *        algorithm comes from Internet. I do not known why.
- * 
- *        Do not modify.
+ * Get value
  */
 public class Utils {
 
-	public static Object getValue(Annotation anno, String key) throws NoSuchMethodException,
-			SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public static Object getValue(Annotation anno, String func) throws Exception {
 
-		Method m = anno.annotationType().getMethod(key);
+		Method m = anno.annotationType().getMethod(func);
 		Object value = m.invoke(anno);
 		if (value.getClass().isArray()) {
 			Object[] v = (Object[]) value;

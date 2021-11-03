@@ -36,6 +36,10 @@ import org.springframework.util.SystemPropertyUtils;
  * 
  * Do not modify.
  */
+/**
+ * @author henry
+ *
+ */
 public class Scanner implements ResourceLoaderAware {
 
 	/**
@@ -53,15 +57,25 @@ public class Scanner implements ResourceLoaderAware {
 	 *
 	 ************************************************************/
 	
+	/**
+	 * @param basePackages       package name
+	 * @return Class set
+	 */
 	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String basePackages) {
 		try {
-			return scan(basePackages, (Class<? extends Annotation>) Class.forName(Constants.DEFAULT_REQUESTMAPPING));
+			return scan(basePackages, (Class<? extends Annotation>) 
+					Class.forName(Constants.DEFAULT_REQUESTMAPPING));
 		} catch (ClassNotFoundException e) {
 		}
 		return new HashSet<>();
 	}
 	
+	/**
+	 * @param basePackages       package name
+	 * @param annos              annotations
+	 * @return Class set
+	 */
 	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annos) {
 		if (basePackages == null) {
@@ -70,6 +84,11 @@ public class Scanner implements ResourceLoaderAware {
 		return scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annos);
 	}
 	
+	/**
+	 * @param basePackages        package names
+	 * @param annos               annotations
+	 * @return Class set
+	 */
 	@SuppressWarnings("unchecked")
 	public static Set<Class<?>> scan(String[] basePackages, Class<? extends Annotation>... annos) {
 		
@@ -90,6 +109,10 @@ public class Scanner implements ResourceLoaderAware {
 		return classes;
 	}
 
+	/**
+	 * @param basePackage          package name
+	 * @return class set
+	 */
 	private static Set<Class<?>> doScan(String basePackage) {
 		Set<Class<?>> classes = new HashSet<Class<?>>();
 		try {
@@ -122,10 +145,18 @@ public class Scanner implements ResourceLoaderAware {
 	 * Utils
 	 *
 	 ************************************************************/
+	/**
+	 * @param includeFilter        filter
+	 */
 	private static void addIncludeFilter(TypeFilter includeFilter) {
 		filters.add(includeFilter);
 	}
 
+	/**
+	 * @param metadataReader        reader
+	 * @return true or false
+	 * @throws IOException   io exception
+	 */
 	private static boolean matches(MetadataReader metadataReader) throws IOException {
 		for (TypeFilter tf : filters) {
 			if (tf.match(metadataReader, metadataReaderFactory)) {
@@ -135,6 +166,7 @@ public class Scanner implements ResourceLoaderAware {
 		return false;
 	}
 
+	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		patternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
 		metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);

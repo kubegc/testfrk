@@ -4,7 +4,6 @@
 package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +66,7 @@ public class Recorder {
 
 
 	private static String getPostfix(String annoClass, String annoUrlTag, Method m)
-			throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+			throws Exception {
 		@SuppressWarnings("unchecked")
 		Annotation ma = m.getAnnotation(
 				(Class<? extends Annotation>) 
@@ -78,7 +77,7 @@ public class Recorder {
 
 
 	private static String getPrefix(String annoClass, String annoUrlTag, String c)
-			throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+			throws Exception {
 		Class<?> cls = Class.forName(c);
 		@SuppressWarnings("unchecked")
 		Annotation ca = cls.getAnnotation(

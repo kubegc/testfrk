@@ -20,6 +20,10 @@ public class ExtractorTest {
 		System.out.println(Extractor.extract(
 				Scanner.scan("io.github.testfrk"), 
 				Constants.DEFAULT_POST));
+		
+		System.out.println(Extractor.extract(
+				Scanner.scan("io.github.testfrk"), 
+				Constants.DEFAULT_GET));
 	}
 
 }

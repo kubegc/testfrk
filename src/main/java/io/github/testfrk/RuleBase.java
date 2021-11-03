@@ -13,11 +13,7 @@ import java.util.Map;
  * @author wuheng@iscas.ac.cn
  * @since 2021.10.26
  * 
- * find all classes with a specified annotation.
- * Note that the core algorithm comes from Internet.
- * I do not known why. 
- * 
- * Do not modify.
+ * It is used for storing intermediate results
  */
 public class RuleBase {
 

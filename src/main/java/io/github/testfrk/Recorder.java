@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.testfrk.Extractor.MethodAndType;
-import io.github.testfrk.utils.DataUtil;
+import io.github.testfrk.utils.AnnotationUtil;
 
 /**
  * 
@@ -66,7 +66,7 @@ public class Recorder {
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ma == null) ? "" :(String) 
-				DataUtil.getValue(ma, annoUrlTag);
+				AnnotationUtil.getValue(ma, annoUrlTag);
 	}
 
 
@@ -78,7 +78,7 @@ public class Recorder {
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ca == null) ? "" : (String) 
-				DataUtil.getValue(ca, annoUrlTag);
+				AnnotationUtil.getValue(ca, annoUrlTag);
 	}
 	
 	private static String toUrl(String prefix, String postfix) {

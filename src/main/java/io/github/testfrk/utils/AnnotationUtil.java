@@ -5,6 +5,7 @@ package io.github.testfrk.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 /**
  * 
@@ -13,7 +14,7 @@ import java.lang.reflect.Method;
  * 
  * Get value
  */
-public class DataUtil {
+public class AnnotationUtil {
 
 	public static Object getValue(Annotation anno, String func) throws Exception {
 
@@ -24,6 +25,13 @@ public class DataUtil {
 			return v[0];
 		} 
 		return value;
+	}
+	
+	public static void assertNotNull(String url, Parameter p, Annotation a, Class<?> ac) {
+		if (a == null) {
+			throw new RuntimeException("the parameter " + p.getName() + " in " + url 
+					+ " missing annotation " + ac.getName());
+		}
 	}
 
 }

@@ -3,6 +3,8 @@
  */
 package io.github.testfrk;
 
+import io.github.testfrk.analyzers.DefaultAnalyzer;
+
 /**
  * 
  * @author wuheng@iscas.ac.cn
@@ -14,7 +16,7 @@ package io.github.testfrk;
 public class AnalyzerTest {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println(new Analyzer("io.github.testfrk.springboot").analyse().toPrettyString());
+		System.out.println(new DefaultAnalyzer("io.github.testfrk.springboot").analyse().toPrettyString());
 	}
 
 }

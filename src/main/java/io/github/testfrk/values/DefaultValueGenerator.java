@@ -23,11 +23,16 @@ import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
+
+import io.github.testfrk.utils.AnnotationUtil;
 
 /**
  * 
@@ -37,11 +42,9 @@ import com.github.kubesys.httpfrk.utils.JavaUtil;
 @SuppressWarnings("deprecation")
 public class DefaultValueGenerator extends AbstractValueGenerator {
 
-	
 	protected static String[]   cstas = new String[]{
 								"org.hibernate.validator.constraints", 
 								"javax.validation.constraints"};
-	
 	
 	public ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception {
 		return getPrimitiveValues(cls, p.getType().getName(), p.getName(), p.getAnnotations());
@@ -376,6 +379,36 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 
 	public static int getMinFalseValue(String classname, String name, Min exp) {
 		return (int) (exp.value() - 1);
+	}
+
+	@Override
+	public String checkAndGetKey(String url, Method m, int i) throws Exception {
+		Parameter p = m.getParameters()[i];
+		
+		// 每个参数都必须带Validated
+		Validated v = p.getAnnotation(Validated.class);
+		AnnotationUtil.assertNotNull(url, p, v, Validated.class);
+		
+		// 每个参数都必须带RequestParam
+		RequestParam rp = p.getAnnotation(RequestParam.class);
+		AnnotationUtil.assertNotNull(url, p, rp, RequestParam.class);
+		
+		return (rp.value() == null || rp.value().length() == 0) 
+									? p.getName() : rp.value(); 
+	}
+
+	@Override
+	public Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception {
+		// 每个参数都必须带Validated
+		Parameter p = m.getParameters()[i];
+		
+		Validated v = p.getAnnotation(Validated.class);
+		AnnotationUtil.assertNotNull(url, p, v, Validated.class);
+		
+		RequestBody rb = p.getAnnotation(RequestBody.class);
+		AnnotationUtil.assertNotNull(url, p, rb, RequestBody.class);
+		
+		return v.value();
 	}
 
 }

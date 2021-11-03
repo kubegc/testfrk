@@ -38,7 +38,7 @@ public class UserControllerTest  {
     @Test
     public void get_getUser_valid_allTest() throws Exception {
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=E909H4HD56F7E0AC644&age=99")
+                .get("/user/getUser?name=A1G1090415GE4B2H95I&age=99")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);
         mvc.perform(builder)
@@ -51,7 +51,7 @@ public class UserControllerTest  {
     @Test
     public void get_getUser_invalid_nameTest() throws Exception {
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=3C9I470KGAGEFAB2H13E7&age=99")
+                .get("/user/getUser?name=47BGG8I48G8DD9G42GGB8&age=99")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);
         mvc.perform(builder)
@@ -64,7 +64,7 @@ public class UserControllerTest  {
     @Test
     public void get_getUser_invalid_ageTest() throws Exception {
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=E909H4HD56F7E0AC644&age=101")
+                .get("/user/getUser?name=A1G1090415GE4B2H95I&age=101")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);
         mvc.perform(builder)
@@ -76,7 +76,7 @@ public class UserControllerTest  {
 	public static final String echoUser_PATH = "/user/echoUser";
 
     
-    private String post_echoUser_valid_all_DATA ="{\"name\":\"DBIC5714G1G711C00I5\",\"age\":99,\"desc\":\"573731464\"}";
+    private String post_echoUser_valid_all_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":99,\"desc\":\"032134055\"}";
 
     @Test
     public void post_echoUser_valid_allTest() throws Exception {
@@ -92,7 +92,7 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_name_DATA ="{\"name\":\"A35IHGF9D9JD2FB9KHB5G\",\"age\":99,\"desc\":\"573731464\"}";
+    private String post_echoUser_invalid_name_DATA ="{\"name\":\"84CJ30DBHD6HGG7BC00IF\",\"age\":99,\"desc\":\"032134055\"}";
 
     @Test
     public void post_echoUser_invalid_nameTest() throws Exception {
@@ -108,7 +108,7 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_age_DATA ="{\"name\":\"DBIC5714G1G711C00I5\",\"age\":101,\"desc\":\"573731464\"}";
+    private String post_echoUser_invalid_age_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":101,\"desc\":\"032134055\"}";
 
     @Test
     public void post_echoUser_invalid_ageTest() throws Exception {
@@ -124,7 +124,7 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_desc_DATA ="{\"name\":\"DBIC5714G1G711C00I5\",\"age\":99,\"desc\":\"56695142644\"}";
+    private String post_echoUser_invalid_desc_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":99,\"desc\":\"9A014489617\"}";
 
     @Test
     public void post_echoUser_invalid_descTest() throws Exception {

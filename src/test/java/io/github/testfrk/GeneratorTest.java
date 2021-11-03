@@ -3,6 +3,7 @@
  */
 package io.github.testfrk;
 
+import io.github.testfrk.analyzers.DefaultAnalyzer;
 import io.github.testfrk.springboot.TestServer;
 
 /**
@@ -18,7 +19,7 @@ public class GeneratorTest {
 	public static void main(String[] args) throws Exception {
 		new Generator("io.github.frks", 
 				TestServer.class, 
-				new Analyzer("io.github.testfrk.springboot"))
+				new DefaultAnalyzer("io.github.testfrk.springboot"))
 		.generate();
 	}
 

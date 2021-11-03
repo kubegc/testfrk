@@ -6,6 +6,7 @@ package io.github.testfrk.values;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Properties;
 
@@ -38,4 +39,8 @@ public abstract class AbstractValueGenerator {
 	public abstract ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception;
 	
 	public abstract ArrayNode getPrimitiveValues(String cls, Field f, String tag) throws Exception;
+	
+	public abstract String checkAndGetKey(String url, Method m, int i) throws Exception;
+	
+	public abstract Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception;
 }

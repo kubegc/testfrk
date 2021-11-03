@@ -35,7 +35,7 @@ public class UserControllerTest  {
 	public static final String echoHello2_PATH = "/user/echoUser";
 
     
-    private String echoUser_valid_all_DATA ="{\"name\":\"37D41DAE1CGC9GBDC29\",\"age\":99,\"desc\":\"870176455\"}";
+    private String echoUser_valid_all_DATA ="{\"name\":\"8ADH0HC4B6BB49E43G8\",\"age\":99,\"desc\":\"408552674\"}";
 
     @Test
     public void echoUser_valid_allTest() throws Exception {
@@ -51,7 +51,7 @@ public class UserControllerTest  {
     }
 
     
-    private String echoUser_invalid_name_DATA ="{\"name\":\"05A56DD77JDDG935G5J00\",\"age\":99,\"desc\":\"870176455\"}";
+    private String echoUser_invalid_name_DATA ="{\"name\":\"H6HI62BC2HG37II62CEGF\",\"age\":99,\"desc\":\"408552674\"}";
 
     @Test
     public void echoUser_invalid_nameTest() throws Exception {
@@ -67,7 +67,7 @@ public class UserControllerTest  {
     }
 
     
-    private String echoUser_invalid_age_DATA ="{\"name\":\"37D41DAE1CGC9GBDC29\",\"age\":101,\"desc\":\"870176455\"}";
+    private String echoUser_invalid_age_DATA ="{\"name\":\"8ADH0HC4B6BB49E43G8\",\"age\":101,\"desc\":\"408552674\"}";
 
     @Test
     public void echoUser_invalid_ageTest() throws Exception {
@@ -83,7 +83,7 @@ public class UserControllerTest  {
     }
 
     
-    private String echoUser_invalid_desc_DATA ="{\"name\":\"37D41DAE1CGC9GBDC29\",\"age\":99,\"desc\":\"83532603443\"}";
+    private String echoUser_invalid_desc_DATA ="{\"name\":\"8ADH0HC4B6BB49E43G8\",\"age\":99,\"desc\":\"A888A810519\"}";
 
     @Test
     public void echoUser_invalid_descTest() throws Exception {

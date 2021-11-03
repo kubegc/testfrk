@@ -252,11 +252,15 @@ public class ValueUtil {
 			return null;
 		}
 		
-		char[] chArr = new char[len];
-		for (int i = 0; i < len; i++) {
-			chArr[i] = codes[random.nextInt(len)%codes.length];
+		try {
+			char[] chArr = new char[len];
+			for (int i = 0; i < len; i++) {
+				chArr[i] = codes[random.nextInt(len)%codes.length];
+			}
+			return new String(chArr);
+		} catch (java.lang.OutOfMemoryError ex) {
+			return null;
 		}
-		return new String(chArr);
 	}
 	
 	public static void print(Annotation[] as) {

@@ -16,8 +16,10 @@ import io.github.testfrk.springboot.TestServer;
 public class GeneratorTest {
 
 	public static void main(String[] args) throws Exception {
-		new Generator("io.github.frks", TestServer.class, 
-			new Analyzer("io.github.testfrk.springboot")).generate();;
+		new Generator("io.github.frks", 
+				TestServer.class, 
+				new Analyzer("io.github.testfrk.springboot"))
+		.generate();
 	}
 
 }

@@ -10,33 +10,49 @@ import java.io.FileWriter;
 
 /**
  * @author wuheng@iscas.ac.cn
- * @since 2021.6.29
+ * @since 2021.10.3
  * 
+ * It is used for read and write TestCase.
  */
 
 public class FileUtil {
 
+	/**
+	 * @param pkg         package name
+	 * @param name        testcase name
+	 * @param content     testcase content
+	 * @throws Exception  unable to write
+	 */
 	public static void write(String pkg, String name, String content) throws Exception {
-		String path = "src/test/java/" + pkg.replaceAll("\\.", "/");
-		File dir = new File(path);
+		// make dir
+		File dir = new File("src/test/java/" + pkg.replaceAll("\\.", "/"));
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		FileWriter java = new FileWriter(new File(dir, name + ".java"));
-		java.write(content);
-		java.flush();
-		java.close();
+		// write content
+		FileWriter writer = new FileWriter(
+				new File(dir, name + ".java"));
+		writer.write(content);
+		writer.close();
 	}
 	
-	public static String read(String name) throws Exception {
+	/**
+	 * @param file        file path
+	 * @return            file content
+	 * @throws Exception  unable to read
+	 */
+	public static String read(String file) throws Exception {
+		// init file content
 		StringBuilder sb = new StringBuilder();
+		// append content
 		BufferedReader br = new BufferedReader(
-				new FileReader(new File(name)));
+				new FileReader(new File(file)));
 		String line = null;
 		while ((line = br.readLine()) != null) {
 			sb.append(line).append("\n");
 		}
 		br.close();
+		// return
 		return sb.toString();
 	}
 }

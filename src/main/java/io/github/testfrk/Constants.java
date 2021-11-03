@@ -13,17 +13,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author wuheng@iscas.ac.cn
  * @since 2021.10.26
  * 
- * find all classes with a specified annotation.
- * Note that the core algorithm comes from Internet.
- * I do not known why. 
- * 
- * Do not modify.
+ * Just constants
  */
 public class Constants {
 
 	/*******************************************************
 	 * 
-	 *
+	 *   Request type
 	 *
 	 *******************************************************/
 	
@@ -37,7 +33,7 @@ public class Constants {
 	
 	/*******************************************************
 	 * 
-	 *
+	 *    Tag: RequestMapping
 	 *
 	 *******************************************************/
 	public static String SPRINGBOOT_REQUESTMAPPING    = "org.springframework.web.bind.annotation.RequestMapping";
@@ -47,7 +43,7 @@ public class Constants {
 	
 	/*******************************************************
 	 * 
-	 *
+	 *    Tag: Request type
 	 *
 	 *******************************************************/
 	public static Map<String, Object> SPRINGBOOT_POST = new HashMap<>(); 
@@ -75,7 +71,7 @@ public class Constants {
 	
 	/*******************************************************
 	 * 
-	 *
+	 *      Tag: Request url
 	 *
 	 *******************************************************/
 	

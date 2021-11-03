@@ -26,7 +26,7 @@ public class Extractor {
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 */
 	public static Map<String, List<Method>> extract(Set<Class<?>> clses) {
-		return extract(clses, Constants.DEFAULT_POST);
+		return extract(clses, Constants.DEFAULT_ALL);
 	}
 	
 	/**
@@ -132,14 +132,12 @@ public class Extractor {
 	 */
 	private static Annotation filterViaLabels(Annotation anno, Map<String, Object> labels) {
 		
-		if (labels.size() > 1) {
-			throw new UnsupportedOperationException("TODO. support mutiple labels simultaneously later.");
-		}
-		
 		for (String func : labels.keySet()) {
 			try {
 				Object value = Utils.getValue(anno, func);
-				return value == labels.get(func) ? anno : null;
+				if (labels.get(func).equals("ALL") || value == labels.get(func)) {
+					return anno;
+				}
 			} catch (Exception e) {
 				
 			}

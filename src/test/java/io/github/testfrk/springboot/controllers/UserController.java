@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,10 +30,22 @@ public class UserController {
 
 	@RequestMapping(value= "/echoUser", 
 			method = RequestMethod.POST)
-	public JsonNode echoHello2(@RequestBody @Validated User user) {
+	public JsonNode echoUser(@RequestBody @Validated User user) {
 		ObjectNode res = new ObjectMapper().createObjectNode();
 		res.put("success", true);
 		res.put("data", user.toString());
+		return res;
+	}
+	
+	@RequestMapping(value= "/getUser", 
+			method = RequestMethod.GET)
+	public JsonNode getUser(
+			@RequestParam @Validated @Pattern(regexp = "[0-9a-zA-Z]{6,20}") String name,
+			@RequestParam @Validated @Min(0) @Max(100) Integer age) {
+		
+		ObjectNode res = new ObjectMapper().createObjectNode();
+		res.put("success", true);
+		res.put("data", name + "-" + age);
 		return res;
 	}
 	

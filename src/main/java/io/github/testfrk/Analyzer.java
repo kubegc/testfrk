@@ -20,7 +20,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
 
-import io.github.testfrk.utils.ValueUtil;
+import io.github.testfrk.values.AbstractValue;
+import io.github.testfrk.values.DefaultValueImpl;
 
 /**
  * 
@@ -29,15 +30,15 @@ import io.github.testfrk.utils.ValueUtil;
  */
 public class Analyzer {
 
-	protected final ValueUtil valueUtil;
+	protected final AbstractValue valueUtil;
 	
 	protected final String pkgName;
 
 	public Analyzer(String pkgName) throws Exception {
-		this(new ValueUtil(), pkgName);
+		this(new DefaultValueImpl(), pkgName);
 	}
 	
-	public Analyzer(ValueUtil valueUtil, String pkgName) throws Exception {
+	public Analyzer(AbstractValue valueUtil, String pkgName) throws Exception {
 		this.valueUtil = valueUtil;
 		this.pkgName   = pkgName;
 		Recorder.record(Extractor.extract(
@@ -146,7 +147,7 @@ public class Analyzer {
 			else {
 				RequestBody rb = p.getAnnotation(RequestBody.class);
 				assertNotNull(url, p, rb, RequestBody.class);
-				params = valueUtil.getObjectValues(ValueUtil
+				params = valueUtil.getObjectValues(DefaultValueImpl
 						.getClassName(t.getTypeName()), v.value());
 			}
 		}

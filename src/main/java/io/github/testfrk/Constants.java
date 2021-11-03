@@ -54,12 +54,17 @@ public class Constants {
 	
 	public static Map<String, Object> SPRINGBOOT_DEL  = new HashMap<>();
 	
+	public static Map<String, Object> SPRINGBOOT_ALL  = new HashMap<>();
+	
 	static {
 		SPRINGBOOT_POST.put("method", RequestMethod.POST);
-		SPRINGBOOT_GET.put("method", RequestMethod.GET);
-		SPRINGBOOT_PUT.put("method", RequestMethod.PUT);
-		SPRINGBOOT_DEL.put("method", RequestMethod.DELETE);
+		SPRINGBOOT_GET.put("method",  RequestMethod.GET);
+		SPRINGBOOT_PUT.put("method",  RequestMethod.PUT);
+		SPRINGBOOT_DEL.put("method",  RequestMethod.DELETE);
+		SPRINGBOOT_ALL.put("method",  "ALL");
 	}
+	
+	public static Map<String, Object> DEFAULT_ALL     = SPRINGBOOT_ALL;
 	
 	public static Map<String, Object> DEFAULT_POST    = SPRINGBOOT_POST;
 	

@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>io.github.projects</groupId>
-	<artifactId>newhero-testfrk</artifactId>
-	<version>0.3</version>
+	<groupId>io.github.kubesys</groupId>
+	<artifactId>testfrk</artifactId>
+	<version>0.4</version>
 	<packaging>jar</packaging>
 
-	<name>newhero-analyzer</name>
+	<name>testfrk</name>
 	<url>http://maven.apache.org</url>
 
 	<dependencies>
@@ -127,22 +127,6 @@
 				<executions>
 					<execution>
 						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!--javadoc -->
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<charset>UTF-8</charset>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>

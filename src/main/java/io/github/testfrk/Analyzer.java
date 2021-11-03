@@ -4,7 +4,6 @@
 package io.github.testfrk;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -20,8 +19,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
 
-import io.github.testfrk.values.AbstractValue;
-import io.github.testfrk.values.DefaultValueImpl;
+import io.github.testfrk.values.AbstractValueGenerator;
+import io.github.testfrk.values.DefaultValueGenerator;
 
 /**
  * 
@@ -33,7 +32,7 @@ public class Analyzer {
 	/**
 	 * value
 	 */
-	protected final AbstractValue valueUtil;
+	protected final AbstractValueGenerator valueUtil;
 	
 	/**
 	 * pkgName
@@ -45,105 +44,74 @@ public class Analyzer {
 	 * @throws Exception
 	 */
 	public Analyzer(String pkgName) throws Exception {
-		this(new DefaultValueImpl(), pkgName);
+		this(new DefaultValueGenerator(), pkgName);
 	}
 	
-	public Analyzer(AbstractValue valueUtil, String pkgName) throws Exception {
-		this.valueUtil = valueUtil;
+	/**
+	 * @param valueGenerator   value
+	 * @param pkgName
+	 * @throws Exception
+	 */
+	public Analyzer(AbstractValueGenerator valueGenerator, String pkgName) throws Exception {
+		this.valueUtil = valueGenerator;
 		this.pkgName   = pkgName;
 		Recorder.record(Extractor.extract(
 				Scanner.scan(pkgName)));
 	}
 	
 	/**
-	 * modify by youself
+	 * analyse requested data
+	 * 
+	 * @return   data set
 	 */
-	public static ArrayNode testcases(String url, ObjectNode node) {
-		
-		String prefix = url.substring(url.lastIndexOf("/") + 1);
-		ArrayNode list = new ObjectMapper().createArrayNode();
-		
-		ObjectNode case1 = new ObjectMapper().createObjectNode();
-		ObjectNode case1_content = new ObjectMapper().createObjectNode();
-		Iterator<String> iter = node.fieldNames();
-		while(iter.hasNext()) {
-			String key = iter.next();
-			ArrayNode array = (ArrayNode) node.get(key);
-			case1_content.set(key, array.get(0));
-		}
-		case1.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" + prefix + "_valid_all", case1_content);
-		list.add(case1);
-		
-		for (int i = 0; i < node.size(); i++) {
-			ObjectNode case2 = new ObjectMapper().createObjectNode();
-			ObjectNode case2_content = new ObjectMapper().createObjectNode();
-			Iterator<String> iter2 = node.fieldNames();
-			int j = 0;
-			String name = "";
-			while(iter2.hasNext()) {
-				String key2 = iter2.next();
-				ArrayNode array2 = (ArrayNode) node.get(key2);
-				if (j == i) {
-					name = key2;
-					case2_content.set(key2, array2.get(1));
-				} else {
-					case2_content.set(key2, array2.get(0));
-				}
-				++j;
-			}
-			case2.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" + prefix + "_invalid_" + name, case2_content);
-			list.add(case2);
-		}
-		 
-		return list;
-	}
-	
 	public JsonNode analyse() {
-		ObjectNode node = new ObjectMapper().createObjectNode();
 		
+		ObjectNode url2data = new ObjectMapper().createObjectNode();
+		
+		// for each url, analyse its all possible valid and invalid data
 		for (String url : RuleBase.urlToMethod.keySet()) {
 			try {
-//				Method ana =  Analyzer.class.getMethod(
-//						"analyse" + RuleBase.urlToReqType.get(url), 
-//						String.class, Method.class);
-//				node.set(url, (ArrayNode) ana.invoke(this, url, RuleBase.urlToMethod.get(url)));
-				node.set(url, analyse(url, RuleBase.urlToMethod.get(url)));
-			} catch (InvocationTargetException re) { 
-				re.printStackTrace();
+				// the value is all possible valid and invalid data
+				url2data.set(url, analyseData(url, RuleBase.urlToMethod.get(url)));
+			} catch (Exception re) { 
 				System.out.println("stop analysing " + url);
-			} catch (Exception e) {
-				System.out.println("unsupport void static " + "analyse" + RuleBase.urlToReqType.get(url) 
-							+ "(String url, Method m)");
-				e.printStackTrace();
+				re.printStackTrace();
 			} 
 		}
 		
-		return node;
+		return url2data;
 	}
 	
-	
-	/**
-	 * 请根据项目实施要求，进行二次改造
-	 */
-	public ArrayNode analyse(String url, Method m) throws Exception {
+	public ArrayNode analyseData(String url, Method m) throws Exception {
+		
+		// no data
 		if (m.getParameterCount() == 0) {
 			return new ObjectMapper().createArrayNode();
 		}
 		
-		ObjectNode params = new ObjectMapper().createObjectNode();
+		ObjectNode dataStruct = dataStruct(url, m);
+		return dataContent(url, dataStruct);
+	}
+
+	private ObjectNode dataStruct(String url, Method m) throws Exception {
+		
+		ObjectNode dataStruct = new ObjectMapper().createObjectNode();
+		
 		for (int i = 0 ; i < m.getParameterCount(); i++) {
+			
 			Parameter p = m.getParameters()[i];
 			Type t = m.getGenericParameterTypes()[i];
-			// 每个参数都必须带Validated
-			Validated v = p.getAnnotation(Validated.class);
-			assertNotNull(url, p, v, Validated.class);
 			// 如果是Java基本数据类型（String, Integer等）, 必须有RequestParam标签
 			if (JavaUtil.isPrimitive(t.getTypeName())) {
+				// 每个参数都必须带Validated
+				Validated v = p.getAnnotation(Validated.class);
+				assertNotNull(url, p, v, Validated.class);
+				
 				RequestParam rp = p.getAnnotation(RequestParam.class);
 				assertNotNull(url, p, rp, RequestParam.class);
 				String name = rp.value() == null || rp.value().length() == 0 
 											? p.getName() : rp.value(); 
-				params.set(name, valueUtil.getPrimitiveValues(m.getName(), p));
+				dataStruct.set(name, valueUtil.getPrimitiveValues(m.getName(), p));
 			} 
 			// 这些情况暂时不处理
 			else if (JavaUtil.isList(t.getTypeName()) 
@@ -153,14 +121,85 @@ public class Analyzer {
 			} 
 			// 如果是Java对象，必须包含RequestBody标签
 			else {
+				// 每个参数都必须带Validated
+				Validated v = p.getAnnotation(Validated.class);
+				assertNotNull(url, p, v, Validated.class);
+				
 				RequestBody rb = p.getAnnotation(RequestBody.class);
 				assertNotNull(url, p, rb, RequestBody.class);
-				params = valueUtil.getObjectValues(DefaultValueImpl
+				dataStruct = valueUtil.getObjectValues(DefaultValueGenerator
 						.getClassName(t.getTypeName()), v.value());
 			}
 		}
+		return dataStruct;
+	}
+	
+	/**
+	 * @param url
+	 * @param dataStruct
+	 * @return
+	 */
+	public static ArrayNode dataContent(String url, ObjectNode dataStruct) {
+		ArrayNode dataset = new ObjectMapper().createArrayNode();
+		// a testcase, all parameters have right values
+		dataset.add(rightParameterValueData(url, dataStruct));
+		// N parameters generate N testcases, each testcase has a invalid value 
+		dataset.addAll(wrongParameterValueData(url, dataStruct));
+		return dataset;
+	}
+
+	/**
+	 * @param url               url
+	 * @param dataStruct        dataStruct           
+	 * @param dataset           dataset
+	 * @return   object node
+	 */
+	private static ObjectNode rightParameterValueData(String url, ObjectNode dataStruct) {
+		ObjectNode rightCase = new ObjectMapper().createObjectNode();
 		
-		return testcases(url, params);
+		ObjectNode rightVal  = new ObjectMapper().createObjectNode();
+		
+		Iterator<String> iter = dataStruct.fieldNames();
+		while(iter.hasNext()) {
+			String key = iter.next();
+			ArrayNode array = (ArrayNode) dataStruct.get(key);
+			rightVal.set(key, array.get(0));
+		}
+		
+		rightCase.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" 
+						+ url.substring(url.lastIndexOf("/") + 1) + "_valid_all", rightVal);
+		
+		return rightCase;
+	}
+	
+	private static ArrayNode wrongParameterValueData(String url, ObjectNode dataStruct) {
+		ArrayNode wrongCaseList = new ObjectMapper().createArrayNode();
+		for (int i = 0; i < dataStruct.size(); i++) {
+			ObjectNode wrongCase = new ObjectMapper().createObjectNode();
+			ObjectNode wrongVal  = new ObjectMapper().createObjectNode();
+			Iterator<String> iter = dataStruct.fieldNames();
+			
+			int wrongValuePos = 0;
+			
+			String postfix = "";
+			
+			while(iter.hasNext()) {
+				String key = iter.next();
+				if (wrongValuePos == i) {
+					postfix = key;
+					wrongVal.set(key, dataStruct.get(key).get(1));
+				} else {
+					wrongVal.set(key, dataStruct.get(key).get(0));
+				}
+				++wrongValuePos;
+			}
+			
+			wrongCase.set(RuleBase.urlToReqType.get(url).toLowerCase() 
+							+ "_" + url.substring(url.lastIndexOf("/") + 1) 
+							+ "_invalid_" + postfix, wrongVal);
+			wrongCaseList.add(wrongCase);
+		}
+		return wrongCaseList;
 	}
 
 	public static void assertNotNull(String url, Parameter p, Annotation a, Class<?> ac) {

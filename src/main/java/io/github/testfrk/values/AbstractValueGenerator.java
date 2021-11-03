@@ -5,6 +5,7 @@ package io.github.testfrk.values;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author wuheng@iscas.ac.cn
  * @since 2021.6.29
  */
-public abstract class AbstractValue {
+public abstract class AbstractValueGenerator {
 
 	protected static Properties props = new Properties();
 	
@@ -34,6 +35,7 @@ public abstract class AbstractValue {
 	
 	public abstract ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception;
 	
-	public abstract ArrayNode getPrimitiveValues(String cls, Parameter p);
+	public abstract ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception;
 	
+	public abstract ArrayNode getPrimitiveValues(String cls, Field f, String tag) throws Exception;
 }

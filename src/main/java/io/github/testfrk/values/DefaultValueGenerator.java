@@ -35,7 +35,7 @@ import com.github.kubesys.httpfrk.utils.JavaUtil;
  * @since 2021.6.29
  */
 @SuppressWarnings("deprecation")
-public class DefaultValueImpl extends AbstractValue {
+public class DefaultValueGenerator extends AbstractValueGenerator {
 
 	
 	protected static String[]   cstas = new String[]{
@@ -43,7 +43,7 @@ public class DefaultValueImpl extends AbstractValue {
 								"javax.validation.constraints"};
 	
 	
-	public ArrayNode getPrimitiveValues(String cls, Parameter p) {
+	public ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception {
 		return getPrimitiveValues(cls, p.getType().getName(), p.getName(), p.getAnnotations());
 	}
 	
@@ -377,4 +377,5 @@ public class DefaultValueImpl extends AbstractValue {
 	public static int getMinFalseValue(String classname, String name, Min exp) {
 		return (int) (exp.value() - 1);
 	}
+
 }

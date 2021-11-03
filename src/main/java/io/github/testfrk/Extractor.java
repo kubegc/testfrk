@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.github.testfrk.utils.DataUtil;
+
 /**
  * 
  * @author wuheng@iscas.ac.cn
@@ -106,7 +108,7 @@ public class Extractor {
 		for (Method m : c.getDeclaredMethods()) {
 			// just focus on the method has a specified annotation and labels
 			if (filterViaAnnotation(m, anno, labels) != null) {
-				Object value = Utils.getValue(
+				Object value = DataUtil.getValue(
 						m.getAnnotation(anno), labels.keySet()
 						.toArray(new String[] {})[0]);
 				values.add(new MethodAndType(value.toString(), m));
@@ -143,7 +145,7 @@ public class Extractor {
 		
 		for (String func : labels.keySet()) {
 			try {
-				Object value = Utils.getValue(anno, func);
+				Object value = DataUtil.getValue(anno, func);
 				if (labels.get(func).equals("ALL") || value == labels.get(func)) {
 					return anno;
 				}

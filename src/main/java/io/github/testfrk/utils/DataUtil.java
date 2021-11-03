@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.testfrk;
+package io.github.testfrk.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * 
  * Get value
  */
-public class Utils {
+public class DataUtil {
 
 	public static Object getValue(Annotation anno, String func) throws Exception {
 

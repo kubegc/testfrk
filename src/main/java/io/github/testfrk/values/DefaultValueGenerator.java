@@ -7,10 +7,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -32,7 +29,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
 
-import io.github.testfrk.utils.AnnotationUtil;
+import io.github.testfrk.utils.AnnoUtil;
 
 /**
  * 
@@ -42,7 +39,7 @@ import io.github.testfrk.utils.AnnotationUtil;
 @SuppressWarnings("deprecation")
 public class DefaultValueGenerator extends AbstractValueGenerator {
 
-	protected static String[]   cstas = new String[]{
+	protected static String[] jsr303 = new String[]{
 								"org.hibernate.validator.constraints", 
 								"javax.validation.constraints"};
 	
@@ -51,13 +48,13 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	}
 	
 	public ArrayNode getPrimitiveValues(String cls, Field f, String tag) throws Exception {
-		return getPrimitiveValues(cls, f.getType().getName(), f.getName(), usedAnnotations(f.getAnnotations(), tag));
+		return getPrimitiveValues(cls, f.getType().getName(), f.getName(), AnnoUtil.usedAnnotations(f.getAnnotations(), "groups", jsr303, tag));
 	}
 	
 	public ArrayNode getPrimitiveValues(String cls, String type, String name, Annotation[] as) {
 		ArrayNode list = new ObjectMapper().createArrayNode();
 		if (type.equals(String.class.getName())) {
-			Map<String, Annotation> va = valuesAnnotations(as);
+			Map<String, Annotation> va = AnnoUtil.valuesAnnotations(as, jsr303);
 			if(va.size() == 0) {
 				addValue(list, cls + ".true." + name);
 				addValue(list, cls + ".false." + name);
@@ -105,7 +102,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 				addValue(list, cls + ".false." + name);
 			}
 		} else if (type.equals("java.lang.Integer") || type.equals("int")) {
-			Map<String, Annotation> va = valuesAnnotations(as);
+			Map<String, Annotation> va = AnnoUtil.valuesAnnotations(as, jsr303);
 			if(va.size() == 0) {
 				addValue(list, cls + ".true." + name);
 				addValue(list, cls + ".false." + name);
@@ -120,6 +117,38 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 			}
 		}
 		return list;
+	}
+	
+	@Override
+	public String checkAndGetKey(String url, Method m, int i) throws Exception {
+		Parameter p = m.getParameters()[i];
+		
+		// 每个参数都必须带Validated
+		Validated v = p.getAnnotation(Validated.class);
+		AnnoUtil.assertNotNull(v, Validated.class, url, p);
+		
+		// 每个参数都必须带RequestParam
+		RequestParam rp = p.getAnnotation(RequestParam.class);
+		AnnoUtil.assertNotNull(rp, RequestParam.class, url, p);
+		
+		return (rp.value() == null || rp.value().length() == 0) 
+									? p.getName() : rp.value(); 
+	}
+
+	@Override
+	public Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception {
+		
+		Parameter p = m.getParameters()[i];
+		
+		// 每个参数都必须带Validated
+		Validated v = p.getAnnotation(Validated.class);
+		AnnoUtil.assertNotNull(v, Validated.class, url, p);
+		
+		// 每个参数都必须带RequestBody
+		RequestBody rb = p.getAnnotation(RequestBody.class);
+		AnnoUtil.assertNotNull(rb, RequestBody.class, url, p);
+		
+		return v.value();
 	}
 	
 	public static int len(String str, String prefix, String postfix) {
@@ -146,7 +175,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		for (Field f : cls.getDeclaredFields()) {
 			if (JavaUtil.isPrimitive(f.getGenericType().getTypeName())
 					|| JavaUtil.isStringList(f.getGenericType().getTypeName())) {
-				if (validParameter(f.getAnnotations(), tag)) {
+				if (AnnoUtil.validParameter(f.getAnnotations(), "groups", jsr303, tag)) {
 					node.set(f.getName(), getPrimitiveValues(cls.getSimpleName(), f, tag));
 				}
 			} 
@@ -166,48 +195,6 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		return node;
 	}
 	
-	public static Annotation[] usedAnnotations(Annotation[] as, String tag) throws Exception {
-		
-		List<Annotation> list = new ArrayList<>();
-		for (Annotation a: valuesAnnotations(as).values()) {
-			Method m = a.annotationType().getDeclaredMethod("groups");
-			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
-			
-			// from config case
-			if (vs.length == 0 && tag == null) {
-				list.add(a);
-			}
-			
-			for (Class<?> v : vs) {
-				if (v.getTypeName().equals(tag)) {
-					list.add(a);
-				}
-			}
-		}
-		return list.toArray(new Annotation[] {});
-		
-	}
-	
-	public static boolean validParameter(Annotation[] as, String tag) throws Exception {
-	
-		for (Annotation a : valuesAnnotations(as).values()) {
-			Method m = a.annotationType().getDeclaredMethod("groups");
-			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
-			
-			// from config case
-			if (vs.length == 0 && tag == null) {
-				return true;
-			}
-			
-			for (Class<?> v : vs) {
-				if (v.getTypeName().equals(tag)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	public static String getClassName(String typeName) {
 		int stx = typeName.indexOf("<");
 		if (stx == -1) {
@@ -217,22 +204,6 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		return typeName.substring(stx + 1, etx);
 	}
 	
-	
-	public static Map<String, Annotation> valuesAnnotations(Annotation[] as) {
-		Map<String, Annotation> list = new HashMap<>();
-		if (as == null) {
-			return list;
-		}
-		
-		for (Annotation a: as) {
-			for (String c : cstas) {
-				if (a.annotationType().getTypeName().contains(c)) {
-					list.put(a.annotationType().getTypeName(), a);
-				}
-			}
-		}
-		return list;
-	}
 	
 	public static String getStringValue(int len) {
 		if (len <= 0) {
@@ -379,36 +350,6 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 
 	public static int getMinFalseValue(String classname, String name, Min exp) {
 		return (int) (exp.value() - 1);
-	}
-
-	@Override
-	public String checkAndGetKey(String url, Method m, int i) throws Exception {
-		Parameter p = m.getParameters()[i];
-		
-		// 每个参数都必须带Validated
-		Validated v = p.getAnnotation(Validated.class);
-		AnnotationUtil.assertNotNull(url, p, v, Validated.class);
-		
-		// 每个参数都必须带RequestParam
-		RequestParam rp = p.getAnnotation(RequestParam.class);
-		AnnotationUtil.assertNotNull(url, p, rp, RequestParam.class);
-		
-		return (rp.value() == null || rp.value().length() == 0) 
-									? p.getName() : rp.value(); 
-	}
-
-	@Override
-	public Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception {
-		// 每个参数都必须带Validated
-		Parameter p = m.getParameters()[i];
-		
-		Validated v = p.getAnnotation(Validated.class);
-		AnnotationUtil.assertNotNull(url, p, v, Validated.class);
-		
-		RequestBody rb = p.getAnnotation(RequestBody.class);
-		AnnotationUtil.assertNotNull(url, p, rb, RequestBody.class);
-		
-		return v.value();
 	}
 
 }

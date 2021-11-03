@@ -32,51 +32,10 @@ public class UserControllerTest  {
     @Autowired
     private MockMvc mvc;
 
-	public static final String getUser_PATH = "/user/getUser";
-
- 
-    @Test
-    public void get_getUser_valid_allTest() throws Exception {
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=A1G1090415GE4B2H95I&age=99")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8);
-        mvc.perform(builder)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("success").value(true))
-                .andReturn();
-    }
-
- 
-    @Test
-    public void get_getUser_invalid_nameTest() throws Exception {
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=47BGG8I48G8DD9G42GGB8&age=99")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8);
-        mvc.perform(builder)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("success").value(false))
-                .andReturn();
-    }
-
- 
-    @Test
-    public void get_getUser_invalid_ageTest() throws Exception {
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-                .get("/user/getUser?name=A1G1090415GE4B2H95I&age=101")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8);
-        mvc.perform(builder)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("success").value(false))
-                .andReturn();
-    }
-
 	public static final String echoUser_PATH = "/user/echoUser";
 
     
-    private String post_echoUser_valid_all_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":99,\"desc\":\"032134055\"}";
+    private String post_echoUser_valid_all_DATA ="{\"name\":\"5DF501FADDBC8D8DFBE\",\"age\":99,\"desc\":\"256803600\"}";
 
     @Test
     public void post_echoUser_valid_allTest() throws Exception {
@@ -92,7 +51,7 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_name_DATA ="{\"name\":\"84CJ30DBHD6HGG7BC00IF\",\"age\":99,\"desc\":\"032134055\"}";
+    private String post_echoUser_invalid_name_DATA ="{\"name\":\"13EKAH0F1B8B22HAK84K2\",\"age\":99,\"desc\":\"256803600\"}";
 
     @Test
     public void post_echoUser_invalid_nameTest() throws Exception {
@@ -108,7 +67,7 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_age_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":101,\"desc\":\"032134055\"}";
+    private String post_echoUser_invalid_age_DATA ="{\"name\":\"5DF501FADDBC8D8DFBE\",\"age\":101,\"desc\":\"256803600\"}";
 
     @Test
     public void post_echoUser_invalid_ageTest() throws Exception {
@@ -124,13 +83,54 @@ public class UserControllerTest  {
     }
 
     
-    private String post_echoUser_invalid_desc_DATA ="{\"name\":\"5E6BG989G09B61DB08F\",\"age\":99,\"desc\":\"9A014489617\"}";
+    private String post_echoUser_invalid_desc_DATA ="{\"name\":\"5DF501FADDBC8D8DFBE\",\"age\":99,\"desc\":\"A5732491294\"}";
 
     @Test
     public void post_echoUser_invalid_descTest() throws Exception {
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
                 .post(echoUser_PATH)
                 .content(post_echoUser_invalid_desc_DATA)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8);
+        mvc.perform(builder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("success").value(false))
+                .andReturn();
+    }
+
+	public static final String getUser_PATH = "/user/getUser";
+
+ 
+    @Test
+    public void get_getUser_valid_allTest() throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+                .get("/user/getUser?name=0D1G71FF9GFFABE2932&age=99")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8);
+        mvc.perform(builder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("success").value(true))
+                .andReturn();
+    }
+
+ 
+    @Test
+    public void get_getUser_invalid_nameTest() throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+                .get("/user/getUser?name=47B38GA99K35KIDG3332C&age=99")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8);
+        mvc.perform(builder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("success").value(false))
+                .andReturn();
+    }
+
+ 
+    @Test
+    public void get_getUser_invalid_ageTest() throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+                .get("/user/getUser?name=0D1G71FF9GFFABE2932&age=101")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);
         mvc.perform(builder)

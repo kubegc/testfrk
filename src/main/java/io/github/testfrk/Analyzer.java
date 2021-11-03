@@ -41,7 +41,7 @@ public class Analyzer {
 	protected final String pkgName;
 
 	/**
-	 * @param pkgName     p
+	 * @param pkgName     package
 	 * @throws Exception
 	 */
 	public Analyzer(String pkgName) throws Exception {
@@ -55,10 +55,6 @@ public class Analyzer {
 				Scanner.scan(pkgName)));
 	}
 	
-	public String getPkgName() {
-		return pkgName;
-	}
-
 	/**
 	 * modify by youself
 	 */
@@ -107,10 +103,11 @@ public class Analyzer {
 		
 		for (String url : RuleBase.urlToMethod.keySet()) {
 			try {
-				Method ana =  Analyzer.class.getMethod(
-						"analyse" + RuleBase.urlToReqType.get(url), 
-						String.class, Method.class);
-				node.set(url, (ArrayNode) ana.invoke(this, url, RuleBase.urlToMethod.get(url)));
+//				Method ana =  Analyzer.class.getMethod(
+//						"analyse" + RuleBase.urlToReqType.get(url), 
+//						String.class, Method.class);
+//				node.set(url, (ArrayNode) ana.invoke(this, url, RuleBase.urlToMethod.get(url)));
+				node.set(url, analyse(url, RuleBase.urlToMethod.get(url)));
 			} catch (InvocationTargetException re) { 
 				re.printStackTrace();
 				System.out.println("stop analysing " + url);
@@ -128,7 +125,7 @@ public class Analyzer {
 	/**
 	 * 请根据项目实施要求，进行二次改造
 	 */
-	public ArrayNode analysePOST(String url, Method m) throws Exception {
+	public ArrayNode analyse(String url, Method m) throws Exception {
 		if (m.getParameterCount() == 0) {
 			return new ObjectMapper().createArrayNode();
 		}
@@ -171,5 +168,9 @@ public class Analyzer {
 			throw new RuntimeException("the parameter " + p.getName() + " in " + url 
 					+ " missing annotation " + ac.getName());
 		}
+	}
+	
+	public String getPkgName() {
+		return pkgName;
 	}
 }

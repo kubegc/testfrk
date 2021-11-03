@@ -3,6 +3,8 @@
  */
 package io.github.testfrk;
 
+import java.util.Iterator;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
@@ -44,18 +46,26 @@ public class Generator {
 					continue;
 				}
 				
+				
 				sb.append("\n\tpublic static final String " + RuleBase.urlToMethod.get(url).getName() + "_PATH = \"" + url + "\";\n");
+				
 				int i = 0;
 				for (JsonNode tc : dataList) {
 					String servName = tc.fieldNames().next();
 					String servData = tc.get(servName).toString().replaceAll("\"", "\\\\\"");
 					System.out.println(servName);
 					System.out.println(tc.get(servName).toPrettyString());
-					sb.append("\n").append(FileUtil.read("templates/posttmp")
+					String code = FileUtil.read("templates/" + getType(servName) + "tmp")
 									.replaceAll("#NAME#", servName)
-									.replaceAll("#METHOD#", RuleBase.urlToMethod.get(url).getName())
 									.replace("#DATA#", servData)
-									.replace("#VALUE#", (i == 0) ? "true" : "false"));
+									.replace("#VALUE#", (i == 0) ? "true" : "false");
+					
+					if (getType(servName).equals("get")) {
+						code = code.replaceAll("#URL#", getUrl(url, tc.get(servName)));
+					} else {
+						code = code.replaceAll("#METHOD#", RuleBase.urlToMethod.get(url).getName());
+					}
+					sb.append("\n").append(code);
 					++i;
 				}
 				
@@ -65,6 +75,29 @@ public class Generator {
 			sb.append("}");
 			FileUtil.write(pkgName, clz.getSimpleName() + "Test", sb.toString());
 		}
+	}
+	
+	public static String getUrl(String url, JsonNode data) {
+		
+		if (data.size() == 0) {
+			return url;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(url).append("?");
+		
+		Iterator<String> fieldNames = data.fieldNames();
+		
+		while (fieldNames.hasNext()) {
+			String key = fieldNames.next();
+			sb.append(key).append("=").append(data.get(key).asText()).append("&");
+		}
+		return sb.substring(0, sb.length() - 1);
+	}
+	
+	public static String getType(String url) {
+		int idx = url.indexOf("_");
+		return url.substring(0, idx);
 	}
 	
 }

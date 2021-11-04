@@ -1,0 +1,15 @@
+    
+    private String #NAME#_DATA ="#DATA#";
+
+    @Test
+    public void #NAME#Test() throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+                .post(#METHOD#_PATH)
+                .content(#NAME#_DATA)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8);
+        mvc.perform(builder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("success").value(#VALUE#))
+                .andReturn();
+    }

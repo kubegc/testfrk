@@ -30,7 +30,16 @@ public class UserController {
 
 	@RequestMapping(value= "/echoUser", 
 			method = RequestMethod.POST)
-	public JsonNode echoUser(@RequestBody @Validated User user) {
+	public JsonNode echoUser(@RequestBody @Validated User<Desc> user) {
+		ObjectNode res = new ObjectMapper().createObjectNode();
+		res.put("success", true);
+		res.put("data", user.toString());
+		return res;
+	}
+	
+	@RequestMapping(value= "/echoUser2", 
+			method = RequestMethod.POST)
+	public JsonNode echoUser2(@RequestBody @Validated AllUser user) {
 		ObjectNode res = new ObjectMapper().createObjectNode();
 		res.put("success", true);
 		res.put("data", user.toString());
@@ -49,7 +58,7 @@ public class UserController {
 		return res;
 	}
 	
-	public static class User {
+	public static class AllUser {
 		
 		@Pattern(regexp = "[0-9a-zA-Z]{6,20}")
 		protected String name;
@@ -58,8 +67,16 @@ public class UserController {
 		protected Integer age;
 		
 		@Length(max = 10, min = 2)
-		protected String desc;
+		protected String note;
+		
+		public String getNote() {
+			return note;
+		}
 
+		public void setNote(String note) {
+			this.note = note;
+		}
+		
 		public String getName() {
 			return name;
 		}
@@ -76,16 +93,62 @@ public class UserController {
 			this.age = age;
 		}
 
-		public String getDesc() {
-			return desc;
-		}
-
-		public void setDesc(String desc) {
-			this.desc = desc;
+		public void setAge(Integer age) {
+			this.age = age;
 		}
 		
 		public String toString() {
-			return "hello," + name + "," + age + "," + desc;
+			return "hello," + name + "," + age;
+		}
+		
+	}
+	
+	public static class User<T> {
+		
+		@Pattern(regexp = "[0-9a-zA-Z]{6,20}")
+		protected String name;
+		
+		@Min(0) @Max(100)
+		protected Integer age;
+		
+		protected T desc;
+		
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public int getAge() {
+			return age;
+		}
+
+		public void setAge(int age) {
+			this.age = age;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+		
+		public String toString() {
+			return "hello," + name + "," + age;
+		}
+		
+	}
+	
+	public static class Desc {
+		@Length(max = 10, min = 2)
+		protected String note;
+		
+		public String getNote() {
+			return note;
+		}
+
+		public void setNote(String note) {
+			this.note = note;
 		}
 	}
 	

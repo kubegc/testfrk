@@ -112,7 +112,7 @@ public abstract class Analyzer {
 			Type t = m.getGenericParameterTypes()[i];
 			
 			if (JavaUtil.isPrimitive(t.getTypeName())) {
-				dataStruct.set(valueUtil.checkAndGetKeyFromParam(url, m, i), 
+				dataStruct.set(valueUtil.checkPrimitiveParameter(url, m, i), 
 						valueUtil.getPrimitiveValues(m.getName(), m.getParameters()[i]));
 			} else if (JavaUtil.isList(t.getTypeName()) 
 					|| JavaUtil.isSet(t.getTypeName())
@@ -121,7 +121,7 @@ public abstract class Analyzer {
 			} else {
 				dataStruct = valueUtil.getObjectValues(
 						DefaultValueGenerator.getClassName(t.getTypeName()), 
-						valueUtil.checkAndGetValue(url, m, i));
+						valueUtil.checkObjectParameter(url, m, i));
 			}
 		}
 		

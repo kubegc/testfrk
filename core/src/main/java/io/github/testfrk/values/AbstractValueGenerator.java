@@ -49,7 +49,7 @@ public abstract class AbstractValueGenerator {
 	
 	public abstract ArrayNode  getPrimitiveValues(String clsName, Field f, String tag) throws Exception;
 	
-	public abstract String checkAndGetKeyFromParam(String url, Method m, int i) throws Exception;
+	public abstract String checkPrimitiveParameter(String url, Method m, int i) throws Exception;
 	
-	public abstract Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception;
+	public abstract Class<?>[] checkObjectParameter(String url, Method m, int i) throws Exception;
 }

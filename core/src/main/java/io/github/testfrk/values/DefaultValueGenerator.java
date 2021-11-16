@@ -7,7 +7,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.constraints.Max;
@@ -41,6 +40,12 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	protected static String[] jsr303 = new String[]{
 								"org.hibernate.validator.constraints", 
 								"javax.validation.constraints"};
+	
+	/*************************************************************
+	 * 
+	 *        Util
+	 *
+	 **************************************************************/
 	
 	public ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception {
 		return getPrimitiveValues(cls, p.getType().getName(), p.getName(), p.getAnnotations());
@@ -119,7 +124,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	}
 	
 	@Override
-	public String checkAndGetKeyFromParam(String url, Method m, int i) throws Exception {
+	public String checkPrimitiveParameter(String url, Method m, int i) throws Exception {
 		
 		Parameter p = m.getParameters()[i];
 		
@@ -131,12 +136,13 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		RequestParam rp = p.getAnnotation(RequestParam.class);
 		AnnoUtil.assertNotNull(rp, RequestParam.class, url, p);
 		
+		// 得到用户自定义参数名
 		return (rp.value() == null || rp.value().length() == 0) 
 									? p.getName() : rp.value(); 
 	}
 
 	@Override
-	public Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception {
+	public Class<?>[] checkObjectParameter(String url, Method m, int i) throws Exception {
 		
 		Parameter p = m.getParameters()[i];
 		
@@ -148,13 +154,8 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		RequestBody rb = p.getAnnotation(RequestBody.class);
 		AnnoUtil.assertNotNull(rb, RequestBody.class, url, p);
 		
+		// 得到请求分组信息
 		return v.value();
-	}
-	
-	public static int len(String str, String prefix, String postfix) {
-		int stx = str.lastIndexOf(prefix);
-		int edx = str.lastIndexOf(postfix);
-		return Integer.parseInt(str.substring(stx + 1, edx).trim());
 	}
 	
 	public ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception {
@@ -186,6 +187,11 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		return node;
 	}
 	
+	/*************************************************************
+	 * 
+	 *        Util
+	 *
+	 **************************************************************/
 	public static String getClassName(String typeName) {
 		int stx = typeName.indexOf("<");
 		if (stx == -1) {
@@ -194,33 +200,10 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		int etx = typeName.indexOf(">");
 		return typeName.substring(stx + 1, etx);
 	}
-	
-	
-	/*******************************************************
-	 * 
-	 * 
-	 * 
-	 ********************************************************/
-	
-	static boolean contain(Class<?>[] clzg, String tag) {
-		if (tag == null) {
-			return true;
-		}
-		
-		if (clzg == null && tag != null) {
-			return false;
-		}
-		
-		for (Class<?> c : clzg) {
-			if (c.getName().equals(tag)) {
-				return true;
-			}
-		}
-		
-		return false;
+
+	public static int len(String str, String prefix, String postfix) {
+		int stx = str.lastIndexOf(prefix);
+		int edx = str.lastIndexOf(postfix);
+		return Integer.parseInt(str.substring(stx + 1, edx).trim());
 	}
-	
-
-
-
 }

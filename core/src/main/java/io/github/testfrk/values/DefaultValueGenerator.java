@@ -47,21 +47,28 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	 *
 	 **************************************************************/
 	
-	public ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception {
-		return getPrimitiveValues(cls, p.getType().getName(), p.getName(), p.getAnnotations());
+	public ArrayNode getPrimitiveValues(String method, Parameter p) throws Exception {
+		return getPrimitiveValues(method, p.getType().getName(), p.getName(), p.getAnnotations());
 	}
 	
-	public ArrayNode getPrimitiveValues(String cls, Field f, String tag) throws Exception {
-		return getPrimitiveValues(cls, f.getType().getName(), f.getName(), AnnoUtil.usedAnnotations(f.getAnnotations(), "groups", jsr303, tag));
+	public ArrayNode getPrimitiveValues(String method, Field f, String tag) throws Exception {
+		return getPrimitiveValues(method, f.getType().getName(), f.getName(), AnnoUtil.usedAnnotations(f.getAnnotations(), "groups", jsr303, tag));
 	}
 	
-	public ArrayNode getPrimitiveValues(String cls, String type, String name, Annotation[] as) {
+	/**
+	 * @param method        方法名
+	 * @param type          参数类型
+	 * @param name          参数名
+	 * @param as            参数JSR303描述
+	 * @return
+	 */
+	public ArrayNode getPrimitiveValues(String method, String type, String name, Annotation[] as) {
 		ArrayNode list = new ObjectMapper().createArrayNode();
 		if (type.equals(String.class.getName())) {
 			Map<String, Annotation> va = AnnoUtil.valuesAnnotations(as, jsr303);
 			if(va.size() == 0) {
-				addValue(list, cls + ".true." + name);
-				addValue(list, cls + ".false." + name);
+				addValue(list, method + ".true." + name);
+				addValue(list, method + ".false." + name);
 			} else {
 				Length len = (Length) va.get("org.hibernate.validator.constraints.Length");
 				if (len != null) {
@@ -102,14 +109,14 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 					return list;
 				}
 				
-				addValue(list, cls + ".true." + name);
-				addValue(list, cls + ".false." + name);
+				addValue(list, method + ".true." + name);
+				addValue(list, method + ".false." + name);
 			}
 		} else if (type.equals("java.lang.Integer") || type.equals("int")) {
 			Map<String, Annotation> va = AnnoUtil.valuesAnnotations(as, jsr303);
 			if(va.size() == 0) {
-				addValue(list, cls + ".true." + name);
-				addValue(list, cls + ".false." + name);
+				addValue(list, method + ".true." + name);
+				addValue(list, method + ".false." + name);
 			} else {
 				Min minDesc = (Min) va.get("javax.validation.constraints.Min");
 				Max maxDesc = (Max) va.get("javax.validation.constraints.Max");

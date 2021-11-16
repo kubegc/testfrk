@@ -65,4 +65,37 @@ public class DefaultAnalyzer extends Analyzer {
 		return wrongCaseList;
 	}
 
+	@Override
+	protected ArrayNode nullParameterValueData(String url, ObjectNode dataStruct) {
+		ArrayNode nullCaseList = new ObjectMapper().createArrayNode();
+		for (int i = 0; i < dataStruct.size(); i++) {
+			ObjectNode nullCase = new ObjectMapper().createObjectNode();
+			ObjectNode nullVal  = new ObjectMapper().createObjectNode();
+			Iterator<String> iter = dataStruct.fieldNames();
+			
+			int nullValuePos = 0;
+			
+			String postfix = "";
+			
+			while(iter.hasNext()) {
+				String key = iter.next();
+				if (nullValuePos == i) {
+					postfix = key;
+					nullVal.set(key, new ObjectMapper().nullNode());
+				} else {
+					nullVal.set(key, dataStruct.get(key).get(0));
+				}
+				++nullValuePos;
+			}
+			
+			if (!dataStruct.get(postfix).get(0).isNull()) {
+				nullCase.set(RuleBase.urlToReqType.get(url).toLowerCase() 
+						+ "_" + url.substring(url.lastIndexOf("/") + 1) 
+						+ "_null_" + postfix, nullVal);
+				nullCaseList.add(nullCase);
+			}
+		}
+		return nullCaseList;
+	}
+
 }

@@ -139,6 +139,8 @@ public abstract class Analyzer {
 		dataset.add(rightParameterValueData(url, dataStruct));
 		// N parameters generate N testcases, each testcase has a invalid value 
 		dataset.addAll(wrongParameterValueData(url, dataStruct));
+		// N parameters generate N testcases, each testcase has a null value
+		dataset.addAll(nullParameterValueData(url, dataStruct));
 		return dataset;
 	}
 
@@ -172,6 +174,13 @@ public abstract class Analyzer {
 	 * @return list
 	 */
 	protected abstract ArrayNode wrongParameterValueData(String url, ObjectNode dataStruct);
+	
+	/**
+	 * @param url      url
+	 * @param dataStruct  ds
+	 * @return list
+	 */
+	protected abstract ArrayNode nullParameterValueData(String url, ObjectNode dataStruct);
 
 	/**
 	 * @return package name

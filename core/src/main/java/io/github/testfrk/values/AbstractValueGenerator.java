@@ -43,11 +43,11 @@ public abstract class AbstractValueGenerator {
 		}
 	}
 	
-	public abstract ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception;
+	public abstract ObjectNode getObjectValues(String key, Class<?>[] tags) throws Exception;
 	
-	public abstract ArrayNode  getPrimitiveValues(String clsName, Parameter p) throws Exception;
+	public abstract ArrayNode  getPrimitiveValues(String key, Parameter p) throws Exception;
 	
-	public abstract ArrayNode  getPrimitiveValues(String clsName, Field f, String tag) throws Exception;
+	public abstract ArrayNode  getPrimitiveValues(String key, Field f, String tag) throws Exception;
 	
 	public abstract String checkPrimitiveParameter(String url, Method m, int i) throws Exception;
 	

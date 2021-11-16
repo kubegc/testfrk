@@ -9,11 +9,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Random;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
 
@@ -30,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
 
 import io.github.testfrk.utils.AnnoUtil;
+import io.github.testfrk.utils.ValueUtil;
 
 /**
  * 
@@ -61,9 +60,9 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 			} else {
 				Length len = (Length) va.get("org.hibernate.validator.constraints.Length");
 				if (len != null) {
-					list.add(getStringValue(len.max() - 1));
-					list.add(getStringValue(len.max() + 1));
-					list.add(getStringValue(len.min() - 1));
+					list.add(ValueUtil.getStringValue(len.max() - 1));
+					list.add(ValueUtil.getStringValue(len.max() + 1));
+					list.add(ValueUtil.getStringValue(len.min() - 1));
 					return list;
 				}
 				
@@ -71,9 +70,9 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 				if (pa != null) {
 					int max = len(pa.regexp(), ",", "}");
 					int min = len(pa.regexp(), "{", ",");
-					list.add(getStringValue(max - 1));
-					list.add(getStringValue(max + 1));
-					list.add(getStringValue(min - 1));
+					list.add(ValueUtil.getStringValue(max - 1));
+					list.add(ValueUtil.getStringValue(max + 1));
+					list.add(ValueUtil.getStringValue(min - 1));
 					return list;
 				}
 				
@@ -205,47 +204,12 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	}
 	
 	
-	public static String getStringValue(int len) {
-		if (len <= 0) {
-			return null;
-		}
-		
-		try {
-			char[] chArr = new char[len];
-			for (int i = 0; i < len; i++) {
-				chArr[i] = codes[random.nextInt(len)%codes.length];
-			}
-			return new String(chArr);
-		} catch (java.lang.OutOfMemoryError ex) {
-			return null;
-		}
-	}
-	
-	public static void print(Annotation[] as) {
-		for (Annotation a : as) {
-			System.out.println(a);
-		}
-	}
-	
-	public static void print(Collection<Annotation> as) {
-		for (Annotation a : as) {
-			System.out.println(a);
-		}
-	}
-	
 	/*******************************************************
 	 * 
 	 * 
 	 * 
 	 ********************************************************/
 	
-	static char[] codes = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-			'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c',
-			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-			'y', 'z' };
-
-	static Random random = new Random();
-
 	static boolean contain(Class<?>[] clzg, String tag) {
 		if (tag == null) {
 			return true;
@@ -264,92 +228,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		return false;
 	}
 	
-	public static Object getTrueValue(String classname, Field f, Class<?>[] values) {
-		
-		return getValue(classname, f, values, "true");
-	}
-	
-	public static Object getFalseValue(String classname, Field f, Class<?>[] values) {
-
-		return getValue(classname, f, values, "false");
-	}
-
-	private static Object getValue(String classname, Field f, Class<?>[] values, String type) {
-		String tag = (values != null) ? values[0].getName() : null;
-		String key = classname + "." + type + "." + f.getName();
-		
-		Max max = f.getAnnotation(Max.class);
-		if (max != null) {
-			return type.equals("true") ? getMaxTrueValue(classname, f.getName(), max)
-					: getMaxFalseValue(classname, f.getName(), max);
-		}
-		
-		Min min = f.getAnnotation(Min.class);
-		if (min != null) {
-			return type.equals("true") ? getMinTrueValue(classname, f.getName(), min)
-					: getMinFalseValue(classname, f.getName(), min);
-		}
-		
-		Null _null = f.getAnnotation(Null.class);
-		if (_null != null && contain(_null.groups(), tag)) {
-			return null;
-		}
-		
-		NotNull _notNull = f.getAnnotation(NotNull.class);
-		if (_notNull != null && contain(_notNull.groups(), tag)) {
-			return props.get(key);
-		}
-		
-		
-		Pattern exp = f.getAnnotation(Pattern.class);
-		if (exp != null) {
-//			return type.equals("true") ? getStringTrueValue(classname, f.getName(), exp)
-//					: getStringFalseValue(classname, f.getName(), exp);
-			return props.get(key);
-		}
-
-		return null;
-	}
 
 
-	public static String getStringTrueValue(String classname, String name, Pattern exp) {
-		
-		String v = exp.regexp();
-		int idx = v.lastIndexOf(",");
-		int len = Integer.parseInt(v.substring(idx + 1, v.length() - 1)) - 1;
-		char[] chArr = new char[len];
-		for (int i = 0; i < len; i++) {
-			chArr[i] = codes[random.nextInt(len)];
-		}
-		return new String(chArr);
-
-	}
-
-	public static String getStringFalseValue(String classname, String name, Pattern exp) {
-		String v = exp.regexp();
-		int idx = v.lastIndexOf(",");
-		int len = Integer.parseInt(v.substring(idx + 1, v.length() - 1)) + 1;
-		char[] chArr = new char[len];
-		for (int i = 0; i < len; i++) {
-			chArr[i] = codes[random.nextInt(len)];
-		}
-		return new String(chArr);
-	}
-
-	public static int getMaxTrueValue(String classname, String name, Max exp) {
-		return (int) (exp.value() - 1);
-	}
-
-	public static int getMaxFalseValue(String classname, String name, Max exp) {
-		return (int) (exp.value() + 1);
-	}
-	
-	public static int getMinTrueValue(String classname, String name, Min exp) {
-		return (int) (exp.value() + 1);
-	}
-
-	public static int getMinFalseValue(String classname, String name, Min exp) {
-		return (int) (exp.value() - 1);
-	}
 
 }

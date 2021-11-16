@@ -42,7 +42,7 @@ public class AnnoUtil {
 		
 		List<Annotation> list = new ArrayList<>();
 		for (Annotation a: valuesAnnotations(as, jsr303).values()) {
-			Method m = a.annotationType().getDeclaredMethod("groups");
+			Method m = a.annotationType().getDeclaredMethod(func);
 			Class<?>[] vs =  (Class<?>[]) m.invoke(a);
 			
 			// from config case

@@ -34,13 +34,22 @@ public abstract class AbstractValueGenerator {
 		}
 	}
 	
+	public static void addValue(ArrayNode list, String key) {
+		String val = props.getProperty(key);
+		if (val != null) {
+			list.add(val);
+		} else {
+			System.out.println("config " + key + " in conf/defvalue.conf");
+		}
+	}
+	
 	public abstract ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception;
 	
-	public abstract ArrayNode getPrimitiveValues(String cls, Parameter p) throws Exception;
+	public abstract ArrayNode  getPrimitiveValues(String clsName, Parameter p) throws Exception;
 	
-	public abstract ArrayNode getPrimitiveValues(String cls, Field f, String tag) throws Exception;
+	public abstract ArrayNode  getPrimitiveValues(String clsName, Field f, String tag) throws Exception;
 	
-	public abstract String checkAndGetKey(String url, Method m, int i) throws Exception;
+	public abstract String checkAndGetKeyFromParam(String url, Method m, int i) throws Exception;
 	
 	public abstract Class<?>[] checkAndGetValue(String url, Method m, int i) throws Exception;
 }

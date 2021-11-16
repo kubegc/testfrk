@@ -112,7 +112,7 @@ public abstract class Analyzer {
 			Type t = m.getGenericParameterTypes()[i];
 			
 			if (JavaUtil.isPrimitive(t.getTypeName())) {
-				dataStruct.set(valueUtil.checkAndGetKey(url, m, i), 
+				dataStruct.set(valueUtil.checkAndGetKeyFromParam(url, m, i), 
 						valueUtil.getPrimitiveValues(m.getName(), m.getParameters()[i]));
 			} else if (JavaUtil.isList(t.getTypeName()) 
 					|| JavaUtil.isSet(t.getTypeName())

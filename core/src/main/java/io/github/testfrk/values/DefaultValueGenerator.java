@@ -119,7 +119,8 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	}
 	
 	@Override
-	public String checkAndGetKey(String url, Method m, int i) throws Exception {
+	public String checkAndGetKeyFromParam(String url, Method m, int i) throws Exception {
+		
 		Parameter p = m.getParameters()[i];
 		
 		// 每个参数都必须带Validated
@@ -154,15 +155,6 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		int stx = str.lastIndexOf(prefix);
 		int edx = str.lastIndexOf(postfix);
 		return Integer.parseInt(str.substring(stx + 1, edx).trim());
-	}
-	
-	public static void addValue(ArrayNode list, String key) {
-		String val = props.getProperty(key);
-		if (val != null) {
-			list.add(val);
-		} else {
-			System.out.println("config " + key + " in conf/defvalue.conf");
-		}
 	}
 	
 	public ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception {

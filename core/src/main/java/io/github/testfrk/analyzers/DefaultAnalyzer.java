@@ -6,7 +6,7 @@ package io.github.testfrk.analyzers;
 
 import java.util.Iterator;
 
-
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -48,11 +48,16 @@ public class DefaultAnalyzer extends Analyzer {
 			
 			while(iter.hasNext()) {
 				String key = iter.next();
+				JsonNode v = dataStruct.get(key);
 				if (wrongValuePos == i) {
 					postfix = key;
-					wrongVal.set(key, dataStruct.get(key).get(1));
+					if (!v.isObject()) {
+						wrongVal.set(key, v.get(1));
+					} 
 				} else {
-					wrongVal.set(key, dataStruct.get(key).get(0));
+					if (!v.isObject()) {
+						wrongVal.set(key, v.get(1));
+					}
 				}
 				++wrongValuePos;
 			}
@@ -88,11 +93,15 @@ public class DefaultAnalyzer extends Analyzer {
 				++nullValuePos;
 			}
 			
-			if (!dataStruct.get(postfix).get(0).isNull()) {
-				nullCase.set(RuleBase.urlToReqType.get(url).toLowerCase() 
-						+ "_" + url.substring(url.lastIndexOf("/") + 1) 
-						+ "_null_" + postfix, nullVal);
-				nullCaseList.add(nullCase);
+			try {
+				if (!dataStruct.get(postfix).get(0).isNull()) {
+					nullCase.set(RuleBase.urlToReqType.get(url).toLowerCase() 
+							+ "_" + url.substring(url.lastIndexOf("/") + 1) 
+							+ "_null_" + postfix, nullVal);
+					nullCaseList.add(nullCase);
+				}
+			} catch (Exception ex) {
+				
 			}
 		}
 		return nullCaseList;

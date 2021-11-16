@@ -126,6 +126,8 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 				list.add(max == Integer.MAX_VALUE ? max : max + 1);
 				list.add(min == Integer.MIN_VALUE ? min : min - 1);
 			}
+		} else {
+			System.out.println("I am here");
 		}
 		return list;
 	}
@@ -165,7 +167,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		return v.value();
 	}
 	
-	public ObjectNode getObjectValues(String clsName, Class<?>[] tags) throws Exception {
+	public ObjectNode getObjectValues(String clsName, String genericName, Class<?>[] tags) throws Exception {
 		
 		String tag = tags.length == 0 ? null : tags[0].getName();
 		
@@ -187,8 +189,14 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 			} 
 			// 如果是Java对象，必须包含RequestBody标签
 			else {
-				node.set(f.getName(), getObjectValues(getClassName(
-						f.getGenericType().getTypeName()), tags));
+				if (f.getGenericType().getTypeName().indexOf(".") == -1) {
+					node.set(f.getName(), getObjectValues(genericName, null, tags));
+				} else {
+					node.set(f.getName(), getObjectValues(
+							getOuterClassName(f.getGenericType().getTypeName()),
+							getInnerClassName(f.getGenericType().getTypeName()), tags));
+				}
+				
 			}
 		}
 		return node;
@@ -199,7 +207,7 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 	 *        Util
 	 *
 	 **************************************************************/
-	public static String getClassName(String typeName) {
+	public static String getInnerClassName(String typeName) {
 		int stx = typeName.indexOf("<");
 		if (stx == -1) {
 			return typeName;
@@ -207,6 +215,15 @@ public class DefaultValueGenerator extends AbstractValueGenerator {
 		int etx = typeName.indexOf(">");
 		return typeName.substring(stx + 1, etx);
 	}
+	
+	public static String getOuterClassName(String typeName) {
+		int stx = typeName.indexOf("<");
+		if (stx == -1) {
+			return typeName;
+		}
+		return typeName.substring(0, stx);
+	}
+	
 
 	public static int len(String str, String prefix, String postfix) {
 		int stx = str.lastIndexOf(prefix);

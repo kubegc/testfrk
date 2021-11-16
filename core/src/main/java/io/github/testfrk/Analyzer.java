@@ -120,7 +120,8 @@ public abstract class Analyzer {
 				throw new RuntimeException("Unsupport parameters types: list, Set and Map");
 			} else {
 				dataStruct = valueUtil.getObjectValues(
-						DefaultValueGenerator.getClassName(t.getTypeName()), 
+						DefaultValueGenerator.getOuterClassName(t.getTypeName()), 
+						DefaultValueGenerator.getInnerClassName(t.getTypeName()),
 						valueUtil.checkObjectParameter(url, m, i));
 			}
 		}
@@ -158,8 +159,22 @@ public abstract class Analyzer {
 		Iterator<String> iter = dataStruct.fieldNames();
 		while(iter.hasNext()) {
 			String key = iter.next();
-			ArrayNode array = (ArrayNode) dataStruct.get(key);
-			rightVal.set(key, array.get(0));
+			try {
+				ArrayNode array = (ArrayNode) dataStruct.get(key);
+				rightVal.set(key, array.get(0));
+			} catch (Exception ex) {
+				JsonNode values = dataStruct.get(key);
+				
+				ObjectNode newCase = new ObjectMapper().createObjectNode();
+				
+				Iterator<String> names = values.fieldNames();
+				while (names.hasNext()) {
+					String subKey = names.next();
+					newCase.set(subKey, values.get(subKey).get(0));
+				}
+				
+				rightVal.set(key, newCase);
+			}
 		}
 		
 		rightCase.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" 

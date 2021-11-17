@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
@@ -22,13 +23,12 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.util.StringUtils;
 import org.springframework.util.SystemPropertyUtils;
 
 /**
  * 
  * @author wuheng@iscas.ac.cn
- * @since 2021.10.26
+ * @since  0.6
  * 
  * find all classes with a specified annotation.
  * Note that the core algorithm comes from Internet.
@@ -37,18 +37,27 @@ import org.springframework.util.SystemPropertyUtils;
  * Do not modify.
  */
 /**
- * @author henry
+ * @author wuheng@iscas.ac.cn
+ * @since  0.6
  *
  */
 public class Scanner implements ResourceLoaderAware {
 
+	public  static final Logger m_logger = Logger.getLogger(Scanner.class);
+	
 	/**
 	 * 
 	 */
-	private static final List<TypeFilter> filters = new LinkedList<TypeFilter>();
+	private static final List<TypeFilter> annotationTypeFilter = new LinkedList<TypeFilter>();
 
-	private static ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+	/**
+	 * 
+	 */
+	private static ResourcePatternResolver patternResolver     = new PathMatchingResourcePatternResolver();
 
+	/**
+	 * 
+	 */
 	private static MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(patternResolver);
 
 	/***********************************************************
@@ -58,107 +67,116 @@ public class Scanner implements ResourceLoaderAware {
 	 ************************************************************/
 	
 	/**
-	 * @param basePackages       package name
-	 * @return Class set
+	 * 扫描指定包名basePackage，返回包名下所有名Annotation名为org.springframework.web.bind.annotation.RequestMapping的类
+	 * 
+	 * @param basePackage      包名
+	 * @return 含有Annotation名为org.springframework.web.bind.annotation.RequestMapping的类集合
 	 */
 	@SuppressWarnings("unchecked")
-	public static Set<Class<?>> scan(String basePackages) {
+	public static Set<Class<?>> scan(String basePackage) {
 		try {
-			return scan(basePackages, (Class<? extends Annotation>) 
+			return scan(basePackage, (Class<? extends Annotation>) 
 					Class.forName(Constants.DEFAULT_REQUESTMAPPING));
 		} catch (ClassNotFoundException e) {
+			m_logger.warn("项目需要引用spring-web");
 		}
 		return new HashSet<>();
 	}
 	
 	/**
-	 * @param basePackages       package name
-	 * @param annos              annotations
-	 * @return Class set
+	 * 扫描指定包名basePackage，返回包名下所有名Annotation名为annos的类
+	 * 
+	 * @param basePackage        包名
+	 * @param annos              注释名
+	 * @return 含有Annotation名为annos的类集合
 	 */
 	@SuppressWarnings("unchecked")
-	public static Set<Class<?>> scan(String basePackages, Class<? extends Annotation>... annos) {
-		if (basePackages == null) {
-			throw new NullPointerException("basePackages cannot be null");
+	public static Set<Class<?>> scan(String basePackage, Class<? extends Annotation>... annos) {
+		
+		if (basePackage == null || annos == null) {
+			throw new NullPointerException("包名basePackage和注释annos都不能为空");
 		}
-		return scan(StringUtils.tokenizeToStringArray(basePackages, ",; \t\n"), annos);
+		
+		for (Class<? extends Annotation> anno : annos) {
+			addIncludeFilter(new AnnotationTypeFilter(anno));
+		}
+
+		return doScan(basePackage);
 	}
 	
-	/**
-	 * @param basePackages        package names
-	 * @param annos               annotations
-	 * @return Class set
-	 */
-	@SuppressWarnings("unchecked")
-	public static Set<Class<?>> scan(String[] basePackages, Class<? extends Annotation>... annos) {
-		
-		if (basePackages == null || basePackages.length == 0) {
-			throw new NullPointerException("basePackages cannot be null");
-		}
-		
-		if (annos != null) {
-			for (Class<? extends Annotation> anno : annos) {
-				addIncludeFilter(new AnnotationTypeFilter(anno));
-			}
-		}
-
-		Set<Class<?>> classes = new HashSet<Class<?>>();
-		for (String s : basePackages) {
-			classes.addAll(doScan(s));
-		}
-		return classes;
-	}
 
 	/**
-	 * @param basePackage          package name
-	 * @return class set
+	 * 扫描指定包名basePackage，返回包名下所有annotationTypeFilter覆盖的类
+	 * 
+	 * @param basePackage        包名
+	 * @return 返回包名下所有annotationTypeFilter覆盖的类
 	 */
 	private static Set<Class<?>> doScan(String basePackage) {
+		
 		Set<Class<?>> classes = new HashSet<Class<?>>();
+		
 		try {
+			
+			// class文件路径
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
 					+ org.springframework.util.ClassUtils.convertClassNameToResourcePath(
 							SystemPropertyUtils.resolvePlaceholders(basePackage))
 					+ "/**/*.class";
+			
+			// 所有class文件，抽象为资源resource
 			Resource[] resources = patternResolver.getResources(packageSearchPath);
 
 			for (int i = 0; i < resources.length; i++) {
-				Resource resource = resources[i];
-				if (resource.isReadable()) {
-					MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-					if (filters.size() == 0 || matches(metadataReader)) {
-						try {
-							classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
-						} catch (ClassNotFoundException e) {
-						}
-					}
+				// 得到资源的元信息
+				MetadataReader metadataReader = metadataReaderFactory
+								.getMetadataReader(resources[i]);
+				
+				// 元信息中应该包含指定的注解Annotation
+				if (isValid(metadataReader, resources[i])) {
+					classes.add(Class.forName(metadataReader
+							.getClassMetadata().getClassName()));
 				}
 			}
-		} catch (IOException ex) {
-			throw new BeanDefinitionStoreException("I/O failure during classpath scanning", ex);
+			
+		} catch (Exception ex) {
+			throw new BeanDefinitionStoreException("IO异常，请重试.");
 		}
+		
 		return classes;
 	}
-	
+
 	/***********************************************************
 	 * 
 	 * Utils
 	 *
 	 ************************************************************/
 	/**
-	 * @param includeFilter        filter
+	 * @param includeFilter        过滤器
 	 */
 	private static void addIncludeFilter(TypeFilter includeFilter) {
-		filters.add(includeFilter);
+		annotationTypeFilter.add(includeFilter);
 	}
 
 	/**
-	 * @param metadataReader        reader
-	 * @return true or false
-	 * @throws IOException   io exception
+	 * @param metadataReader     元信息读取器
+	 * @param resource           资源
+	 * @return   如果资源包含指定的Annotation，即为有效，否则为无效
+	 * @throws IOException       IO异常
+	 */
+	private static boolean isValid(MetadataReader metadataReader, Resource resource) throws IOException {
+		if (resource.isReadable() || (annotationTypeFilter.size() == 0 || matches(metadataReader))) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * @param metadataReader      元信息读取器
+	 * @return 如果资源包含指定的Annotation，即为有效，否则为无效
+	 * @throws IOException        IO异常
 	 */
 	private static boolean matches(MetadataReader metadataReader) throws IOException {
-		for (TypeFilter tf : filters) {
+		for (TypeFilter tf : annotationTypeFilter) {
 			if (tf.match(metadataReader, metadataReaderFactory)) {
 				return true;
 			}
@@ -166,6 +184,9 @@ public class Scanner implements ResourceLoaderAware {
 		return false;
 	}
 
+	/**
+	 * 我也不清楚为啥，但根据网上教程必须设置
+	 */
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		patternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);

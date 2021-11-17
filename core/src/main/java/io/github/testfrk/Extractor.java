@@ -84,7 +84,7 @@ public class Extractor {
 			// just focus on the method has a specified annotation and labels
 			try {
 				
-				Object value = AnnoUtil.getRequestTypeValue(
+				Object value = AnnoUtil.getValue(
 						m.getAnnotation(label.getRequestAnnotation()), 
 						label.getRequestTypeFunction());
 				// 用户期望所有的请求类型

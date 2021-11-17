@@ -15,7 +15,7 @@ import io.github.testfrk.utils.AnnoUtil;
 /**
  * 
  * @author wuheng@iscas.ac.cn
- * @since 2021.10.26
+ * @since  0.6
  * 
  * find all classes with a specified annotation.
  * Note that the core algorithm comes from Internet.
@@ -44,33 +44,34 @@ public class Recorder {
 			throw new NullPointerException("map, or annoClass, or annoUrlTag cannot be null");
 		}
 		
-		for (String c : map.keySet()) {
-			String prefix = getPrefix(annoClass, annoUrlTag, c);
+		for (String classname : map.keySet()) {
 			List<String> urls = new ArrayList<>();
-			for (MethodAndType m : map.get(c)) {
-				String postfix = getPostfix(annoClass, annoUrlTag, m.getMethod());
-				String url = toUrl(prefix, postfix);
+			for (MethodAndType m : map.get(classname)) {
+				String url = toUrl(
+						getUrlPart(annoClass, annoUrlTag, classname), 
+						getUrlPart(annoClass, annoUrlTag, m.getMethod()));
+				
 				urls.add(url);
 				RuleBase.urlToMethod.put(url, m.getMethod());
 				RuleBase.urlToReqType.put(url, m.getType());
 			}
-			RuleBase.nameToUrls.put(c, urls);
+			RuleBase.nameToUrls.put(classname, urls);
 		}
 	}
 
 
-	private static String getPostfix(String annoClass, String annoUrlTag, Method m)
+	private static String getUrlPart(String annoClass, String annoUrlTag, Method m)
 			throws Exception {
 		@SuppressWarnings("unchecked")
 		Annotation ma = m.getAnnotation(
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ma == null) ? "" :(String) 
-				AnnoUtil.getRequestTypeValue(ma, annoUrlTag);
+				AnnoUtil.getValue(ma, annoUrlTag);
 	}
 
 
-	private static String getPrefix(String annoClass, String annoUrlTag, String c)
+	private static String getUrlPart(String annoClass, String annoUrlTag, String c)
 			throws Exception {
 		Class<?> cls = Class.forName(c);
 		@SuppressWarnings("unchecked")
@@ -78,12 +79,11 @@ public class Recorder {
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ca == null) ? "" : (String) 
-				AnnoUtil.getRequestTypeValue(ca, annoUrlTag);
+				AnnoUtil.getValue(ca, annoUrlTag);
 	}
 	
-	private static String toUrl(String prefix, String postfix) {
-		String url = prefix + postfix;
-		return url;
+	private static String toUrl(String urlPrefix, String urlPostfix) {
+		return urlPrefix == null ? urlPostfix : urlPrefix + urlPostfix;
 	}
 	
 }

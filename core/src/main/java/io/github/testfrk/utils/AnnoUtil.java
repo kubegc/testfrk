@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class AnnoUtil {
 
-	public static Object getRequestTypeValue(Annotation anno, String func) throws Exception {
+	public static Object getValue(Annotation anno, String func) throws Exception {
 
 		Method m = anno.annotationType().getMethod(func);
 		Object value = m.invoke(anno);

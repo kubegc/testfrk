@@ -164,7 +164,7 @@ public class Scanner implements ResourceLoaderAware {
 	 * @throws IOException       IO异常
 	 */
 	private static boolean isValid(MetadataReader metadataReader, Resource resource) throws IOException {
-		if (resource.isReadable() || (annotationTypeFilter.size() == 0 || matches(metadataReader))) {
+		if (resource.isReadable() && (annotationTypeFilter.size() == 0 || matches(metadataReader))) {
 			return true;
 		}
 		return false;

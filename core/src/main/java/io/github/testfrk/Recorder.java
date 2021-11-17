@@ -66,7 +66,7 @@ public class Recorder {
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ma == null) ? "" :(String) 
-				AnnoUtil.getValue(ma, annoUrlTag);
+				AnnoUtil.getRequestTypeValue(ma, annoUrlTag);
 	}
 
 
@@ -78,7 +78,7 @@ public class Recorder {
 				(Class<? extends Annotation>) 
 				Class.forName(annoClass));
 		return (ca == null) ? "" : (String) 
-				AnnoUtil.getValue(ca, annoUrlTag);
+				AnnoUtil.getRequestTypeValue(ca, annoUrlTag);
 	}
 	
 	private static String toUrl(String prefix, String postfix) {

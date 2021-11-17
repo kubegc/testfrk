@@ -3,10 +3,10 @@
  */
 package io.github.testfrk;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import io.github.testfrk.Extractor.Label;
 
 /**
  * 
@@ -46,33 +46,26 @@ public class Constants {
 	 *    Tag: Request type
 	 *
 	 *******************************************************/
-	public static Map<String, Object> SPRINGBOOT_POST = new HashMap<>(); 
+	public static Label SPRINGBOOT_POST = new Label(RequestMapping.class, "method", RequestMethod.POST); 
 
-	public static Map<String, Object> SPRINGBOOT_GET  = new HashMap<>();
+	public static Label SPRINGBOOT_GET  = new Label(RequestMapping.class, "method", RequestMethod.GET);
 	
-	public static Map<String, Object> SPRINGBOOT_PUT  = new HashMap<>();
+	public static Label SPRINGBOOT_PUT  = new Label(RequestMapping.class, "method", RequestMethod.PUT);
 	
-	public static Map<String, Object> SPRINGBOOT_DEL  = new HashMap<>();
+	public static Label SPRINGBOOT_DEL  = new Label(RequestMapping.class, "method", RequestMethod.DELETE);
 	
-	public static Map<String, Object> SPRINGBOOT_ALL  = new HashMap<>();
+	public static Label SPRINGBOOT_ALL  = new Label(RequestMapping.class, "method", "ALL");
 	
-	static {
-		SPRINGBOOT_POST.put("method", RequestMethod.POST);
-		SPRINGBOOT_GET.put("method",  RequestMethod.GET);
-		SPRINGBOOT_PUT.put("method",  RequestMethod.PUT);
-		SPRINGBOOT_DEL.put("method",  RequestMethod.DELETE);
-		SPRINGBOOT_ALL.put("method",  "ALL");
-	}
+
+	public static Label DEFAULT_ALL     = SPRINGBOOT_ALL;
 	
-	public static Map<String, Object> DEFAULT_ALL     = SPRINGBOOT_ALL;
+	public static Label DEFAULT_POST    = SPRINGBOOT_POST;
 	
-	public static Map<String, Object> DEFAULT_POST    = SPRINGBOOT_POST;
+	public static Label DEFAULT_GET     = SPRINGBOOT_GET;
 	
-	public static Map<String, Object> DEFAULT_GET     = SPRINGBOOT_GET;
+	public static Label DEFAULT_PUT     = SPRINGBOOT_PUT;
 	
-	public static Map<String, Object> DEFAULT_PUT     = SPRINGBOOT_PUT;
-	
-	public static Map<String, Object> DEFAULT_DEL     = SPRINGBOOT_DEL;
+	public static Label DEFAULT_DEL     = SPRINGBOOT_DEL;
 	
 	/*******************************************************
 	 * 

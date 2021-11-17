@@ -27,138 +27,139 @@ public class Extractor {
 	public final static Logger m_logger = Logger.getLogger(Extractor.class.getName());
 	
 	/**
-	 * @param clses         待分析的类集合，见Scanner.scan
+	 * @param classSet         待分析的类集合，见Scanner.scan
 	 * @return 类名和方法名集合, 比如{io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 * @throws Exception  异常
 	 */
-	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses) throws Exception {
-		return extract(clses, Constants.DEFAULT_ALL);
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> classSet) throws Exception {
+		return extract(classSet, Constants.DEFAULT_ALL);
 	}
 	
+	
 	/**
-	 * @param clses          待分析的类集合，见Scanner.scan
-	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
+	 * @param classSet          待分析的类集合，见Scanner.scan
+	 * @param labels         Annotation用于判断请求类型的方法名，格式见Constants.DEFAULT_POST
 	 * @return 类名和方法名集合, 比如{io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
-	 * @throws Exception  异常
+	 * @throws Exception 异常
 	 */
-	@SuppressWarnings("unchecked")
-	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, Map<String, Object> labels) throws Exception {
-		try {
-			return extract(clses, (Class<? extends Annotation>) 
-					Class.forName(Constants.DEFAULT_REQUESTMAPPING), labels);
-		} catch (ClassNotFoundException e) {
-			m_logger.warning("找不到任何类");
-		}
-		return new HashMap<>();
-	}
-	
-	/**
-	 * @param clses          待分析的类集合，见Scanner.scan
-	 * @param anno           e.g, RequestMapping or null 
-	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
-	 * @throws Exception 
-	 */
-	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, Class<? extends Annotation> anno) throws Exception {
-		return extract(clses, anno, new HashMap<>());
-	}
-	
-	/**
-	 * @param clses          see Scanner.scan
-	 * @param anno           e.g, RequestMapping or null 
-	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
-	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
-	 * @throws Exception 
-	 */
-	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, 
-			Class<? extends Annotation> anno, Map<String, Object> labels) throws Exception {
+	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> classSet, Label label) throws Exception {
 		
-		
-		Map<String, List<MethodAndType>> map = new HashMap<>();
+		Map<String, List<MethodAndType>> mapper = new HashMap<>();
 		
 		// no class
-		if (clses == null) {
-			throw new NullPointerException("parameter clses cannot be null, see Scanner.scan");
+		if (classSet == null) {
+			throw new NullPointerException("参数classSet不能为空");
 		}
 		
 		// for each class
-		for (Class<?> c : clses) {
+		for (Class<?> c : classSet) {
 
 			// classname
 			String cn = c.getName();
+			
 			// ignore this class because of be analyzed 
-			if (map.containsKey(cn)) {
+			if (mapper.containsKey(cn)) {
 				continue;
 			}
 			
 			// classname-methods mapping
-			map.put(cn, extractValues(anno, c, labels == null ? new HashMap<>() : labels));
+			mapper.put(cn, extractValues(c, label));
 		}
 		
-		return map;
+		return mapper;
 	}
 
 	/**
-	 * @param anno          annotations   
-	 * @param c             class
-	 * @param labels        labels
-	 * @return the methods with a specified annotation and labels
-	 * @throws Exception 
+	 * @param c             具体类名
+	 * @param label         Annotation用于判断请求类型的方法名，格式见Constants.DEFAULT_POST
+	 * @return 类钟包含Annotation的方法名
+	 * @throws Exception    异常
 	 */
-	private static List<MethodAndType> extractValues(Class<? extends Annotation> anno, Class<?> c, Map<String, Object> labels) throws Exception {
+	protected static List<MethodAndType> extractValues(Class<?> c, Label label) throws Exception {
 		
 		List<MethodAndType> values = new ArrayList<>();
 		
 		// for each method
 		for (Method m : c.getDeclaredMethods()) {
 			// just focus on the method has a specified annotation and labels
-			if (filterViaAnnotation(m, anno, labels) != null) {
-				Object value = AnnoUtil.getValue(
-						m.getAnnotation(anno), labels.keySet()
-						.toArray(new String[] {})[0]);
-				values.add(new MethodAndType(value.toString(), m));
+			try {
+				
+				Object value = AnnoUtil.getRequestTypeValue(
+						m.getAnnotation(label.getRequestAnnotation()), 
+						label.getRequestTypeFunction());
+				// 用户期望所有的请求类型
+				if ("ALL".equals(label.getRequestTypeValue()) ||
+						// 这个请求与用户期望的一致
+						value == label.getRequestTypeValue()) {
+					values.add(new MethodAndType(value.toString(), m));
+				} else {
+					m_logger.severe("不支持该请求类型" + value + "，对于" + c.getName() + "." + m.getName());
+				}
+			} catch (Exception ex) {
+				// 这里异常说明没有指定的Annotation，如org.springframework.web.bind.annotation.RequestMapping
+				// 因此，直接忽略这种情况即可
 			}
 		}
 		return values;
 	}
 	
 	/**
-	 * @param m            method
-	 * @param anno         annotation
-	 * @param labels       labels
-	 * @return  method
+	 * @author wuheng@iscas.ac.cn
+	 * @since  0.6
+	 *
 	 */
-	// annotation and labels can be null
-	private static Method filterViaAnnotation(Method m, Class<? extends Annotation> anno, Map<String, Object> labels) {
+	public static class Label {
 		
-		if (anno == null) {
-			return m;
+		/**
+		 * eg., org.springframework.web.bind.annotation.RequestMapping
+		 */
+		protected Class<? extends Annotation> requestAnnotation;
+		
+		/**
+		 * eg., method
+		 */
+		protected String requestTypeFunction;
+		
+		/**
+		 * eg., RequestMethod.POST
+		 */
+		protected Object requestTypeValue;
+
+
+		public Label(Class<? extends Annotation> requestAnnotation, String requestTypeFunction,
+				Object requestTypeValue) {
+			super();
+			this.requestAnnotation = requestAnnotation;
+			this.requestTypeFunction = requestTypeFunction;
+			this.requestTypeValue = requestTypeValue;
 		}
+
 		
-		// get annotation
-		Annotation r = m.getAnnotation(anno);
-		return filterViaLabels(r, labels) == null ? null : m;
-	}
-	
-	
-	/**
-	 * @param anno         annotation
-	 * @param labels       labels
-	 * @return 
-	 */
-	private static Annotation filterViaLabels(Annotation anno, Map<String, Object> labels) {
-		
-		for (String func : labels.keySet()) {
-			try {
-				Object value = AnnoUtil.getValue(anno, func);
-				if (labels.get(func).equals("ALL") || value == labels.get(func)) {
-					return anno;
-				}
-			} catch (Exception e) {
-				
-			}
+		public Class<? extends Annotation> getRequestAnnotation() {
+			return requestAnnotation;
 		}
-		
-		return null;
+
+
+		public void setRequestAnnotation(Class<? extends Annotation> requestAnnotation) {
+			this.requestAnnotation = requestAnnotation;
+		}
+
+		public String getRequestTypeFunction() {
+			return requestTypeFunction;
+		}
+
+		public void setRequestTypeFunction(String requestTypeFunction) {
+			this.requestTypeFunction = requestTypeFunction;
+		}
+
+		public Object getRequestTypeValue() {
+			return requestTypeValue;
+		}
+
+		public void setRequestTypeValue(Object requestTypeValue) {
+			this.requestTypeValue = requestTypeValue;
+		}
+	
 	}
 	
 	/**

@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.jboss.logging.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
@@ -43,7 +43,7 @@ import org.springframework.util.SystemPropertyUtils;
  */
 public class Scanner implements ResourceLoaderAware {
 
-	public  static final Logger m_logger = Logger.getLogger(Scanner.class);
+	public  static final Logger m_logger = Logger.getLogger(Scanner.class.getName());
 	
 	/**
 	 * 
@@ -78,7 +78,7 @@ public class Scanner implements ResourceLoaderAware {
 			return scan(basePackage, (Class<? extends Annotation>) 
 					Class.forName(Constants.DEFAULT_REQUESTMAPPING));
 		} catch (ClassNotFoundException e) {
-			m_logger.warn("项目需要引用spring-web");
+			m_logger.warning("项目需要引用spring-web");
 		}
 		return new HashSet<>();
 	}

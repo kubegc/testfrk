@@ -141,7 +141,7 @@ public abstract class Analyzer {
 		// N parameters generate N testcases, each testcase has a invalid value 
 		dataset.addAll(wrongParameterValueData(url, dataStruct));
 		// N parameters generate N testcases, each testcase has a null value
-		dataset.addAll(nullParameterValueData(url, dataStruct));
+//		dataset.addAll(nullParameterValueData(url, dataStruct));
 		return dataset;
 	}
 

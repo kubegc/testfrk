@@ -10,33 +10,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import io.github.testfrk.utils.AnnoUtil;
 
 /**
  * 
  * @author wuheng@iscas.ac.cn
- * @since 2021.10.26
+ * @since  0.6
  * 
  * find all methods with a specified annotation.
  * e.g, RequestMapping
  */
 public class Extractor {
 
+	public final static Logger m_logger = Logger.getLogger(Extractor.class.getName());
+	
 	/**
-	 * @param clses          see Scanner.scan
-	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
-	 * @throws Exception 
+	 * @param clses         待分析的类集合，见Scanner.scan
+	 * @return 类名和方法名集合, 比如{io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception  异常
 	 */
 	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses) throws Exception {
 		return extract(clses, Constants.DEFAULT_ALL);
 	}
 	
 	/**
-	 * @param clses          see Scanner.scan
+	 * @param clses          待分析的类集合，见Scanner.scan
 	 * @param labels         annotation should have this labels, e.g, {method, RequestMethod.POST}
-	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
-	 * @throws Exception 
+	 * @return 类名和方法名集合, 比如{io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
+	 * @throws Exception  异常
 	 */
 	@SuppressWarnings("unchecked")
 	public static Map<String, List<MethodAndType>> extract(Set<Class<?>> clses, Map<String, Object> labels) throws Exception {
@@ -44,12 +47,13 @@ public class Extractor {
 			return extract(clses, (Class<? extends Annotation>) 
 					Class.forName(Constants.DEFAULT_REQUESTMAPPING), labels);
 		} catch (ClassNotFoundException e) {
+			m_logger.warning("找不到任何类");
 		}
 		return new HashMap<>();
 	}
 	
 	/**
-	 * @param clses          see Scanner.scan
+	 * @param clses          待分析的类集合，见Scanner.scan
 	 * @param anno           e.g, RequestMapping or null 
 	 * @return classname-methods mapping, e.g, {io.github.testfrk.springboot.TestServer=[], io.github.testfrk.springboot.controllers.UserController=[public java.lang.Object io.github.testfrk.springboot.controllers.UserController.echoHello2(java.lang.String,int,java.lang.String)]}
 	 * @throws Exception 
@@ -159,13 +163,19 @@ public class Extractor {
 	
 	/**
 	 * @author wuheng@iscas.ac.cn
-	 * @since  2021.11.3
+	 * @since  0.6
 	 *
 	 */
 	public static class MethodAndType {
 		
+		/**
+		 * Get/Post/Put/Delete
+		 */
 		protected final String type;
 		
+		/**
+		 * 方法名
+		 */
 		protected final Method method;
 
 		public MethodAndType(String type, Method method) {

@@ -1,7 +1,7 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.testfrk.analyzers;
+package io.github.testfrk.olds;
 
 
 import java.util.Iterator;
@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.testfrk.Analyzer;
 import io.github.testfrk.RuleBase;
 import io.github.testfrk.values.AbstractValueGenerator;
 

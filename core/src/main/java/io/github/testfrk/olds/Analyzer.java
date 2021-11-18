@@ -1,18 +1,23 @@
 /**
  * Copyrigt (2021, ) Institute of Software, Chinese Academy of Sciences
  */
-package io.github.testfrk;
+package io.github.testfrk.olds;
 
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
+import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kubesys.httpfrk.utils.JavaUtil;
 
+import io.github.testfrk.Extractor;
+import io.github.testfrk.Recorder;
+import io.github.testfrk.RuleBase;
+import io.github.testfrk.Scanner;
 import io.github.testfrk.values.AbstractValueGenerator;
 import io.github.testfrk.values.DefaultValueGenerator;
 
@@ -21,7 +26,7 @@ import io.github.testfrk.values.DefaultValueGenerator;
  * @author wuheng@iscas.ac.cn
  * @since  0.6
  */
-public class Analyzer {
+public abstract class Analyzer {
 
 	/**
 	 * value
@@ -92,6 +97,8 @@ public class Analyzer {
 		// get data structure
 		return dataStruct(url, m);
 		
+		// get data value
+//		return dataValue(url, dataStruct);
 	}
 
 	/**
@@ -124,9 +131,79 @@ public class Analyzer {
 		
 		return dataStruct;
 	}
+	
+	/**
+	 * @param url
+	 * @param dataStruct
+	 * @return list
+	 */
+	protected ArrayNode dataValue(String url, ObjectNode dataStruct) {
+		ArrayNode dataset = new ObjectMapper().createArrayNode();
+		// a testcase, all parameters have right values
+		dataset.add(rightParameterValueData(url, dataStruct));
+		// N parameters generate N testcases, each testcase has a invalid value 
+		dataset.addAll(wrongParameterValueData(url, dataStruct));
+		// N parameters generate N testcases, each testcase has a null value
+//		dataset.addAll(nullParameterValueData(url, dataStruct));
+		return dataset;
+	}
 
+	/**
+	 * @param url               url
+	 * @param dataStruct        dataStruct           
+	 * @param dataset           dataset
+	 * @return   node
+	 */
+	protected ObjectNode rightParameterValueData(String url, ObjectNode dataStruct) {
+		ObjectNode rightCase = new ObjectMapper().createObjectNode();
+		
+		ObjectNode rightVal  = new ObjectMapper().createObjectNode();
+		
+		Iterator<String> iter = dataStruct.fieldNames();
+		while(iter.hasNext()) {
+			String key = iter.next();
+			try {
+				ArrayNode array = (ArrayNode) dataStruct.get(key);
+				rightVal.set(key, array.get(0));
+			} catch (Exception ex) {
+				JsonNode values = dataStruct.get(key);
+				
+				ObjectNode newCase = new ObjectMapper().createObjectNode();
+				
+				Iterator<String> names = values.fieldNames();
+				while (names.hasNext()) {
+					String subKey = names.next();
+					newCase.set(subKey, values.get(subKey).get(0));
+				}
+				
+				rightVal.set(key, newCase);
+			}
+		}
+		
+		rightCase.set(RuleBase.urlToReqType.get(url).toLowerCase() + "_" 
+						+ url.substring(url.lastIndexOf("/") + 1) + "_valid_all", rightVal);
+		
+		return rightCase;
+	}
+	
+	/**
+	 * @param url      url
+	 * @param dataStruct  ds
+	 * @return list
+	 */
+	protected abstract ArrayNode wrongParameterValueData(String url, ObjectNode dataStruct);
+	
+	/**
+	 * @param url      url
+	 * @param dataStruct  ds
+	 * @return list
+	 */
+	protected abstract ArrayNode nullParameterValueData(String url, ObjectNode dataStruct);
+
+	/**
+	 * @return package name
+	 */
 	public String getPkgName() {
 		return pkgName;
 	}
-	
 }

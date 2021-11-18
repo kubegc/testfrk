@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.github.testfrk.builders.RightCaseBuilder;
+import io.github.testfrk.builders.WrongValueCaseBuilder;
 import io.github.testfrk.utils.FileUtil;
 import io.github.testfrk.values.AbstractValue;
 import io.github.testfrk.values.DefaultValue;
@@ -21,26 +23,39 @@ import io.github.testfrk.values.DefaultValue;
  */
 public class Generator {
 
+	protected final ObjectNode dataSet = new ObjectMapper().createObjectNode();
+	
 	protected final String targetPackage;
 	
 	protected final String sourcePackage;
 
-	protected final ObjectNode dataSet = new ObjectMapper().createObjectNode();;
-	
 	protected final Class<?> bootstrap;
+	
+	protected final CaseBuilder[] builders;
 	
 	protected final AbstractValue value;
 	
 	public Generator(String targetPackage, Class<?> bootstrap, Analyzer anlyzer) {
+		this(targetPackage, bootstrap, anlyzer, new CaseBuilder[] {
+				new RightCaseBuilder(),
+				new WrongValueCaseBuilder()
+		});
+	}
+	
+	public Generator(String targetPackage, Class<?> bootstrap, Analyzer anlyzer, CaseBuilder[] builders) {
 		super();
+		
+		this.targetPackage = targetPackage;
+		this.bootstrap = bootstrap;
+		this.builders = builders;
+		
 		this.value = new DefaultValue();
 		JsonNode dataStructure = anlyzer.analyse();
 		for (String url : RuleBase.urlToMethod.keySet()) {
 			dataSet.set(url, dataValue(url, dataStructure.get(url)));
 		}
-		this.targetPackage = targetPackage;
+		
 		this.sourcePackage = anlyzer.getPkgName();
-		this.bootstrap = bootstrap;
 	}
 
 	/**
@@ -50,12 +65,14 @@ public class Generator {
 	 */
 	protected ArrayNode dataValue(String url, JsonNode dataStruct) {
 		ArrayNode dataset = new ObjectMapper().createArrayNode();
-		// a testcase, all parameters have right values
-		dataset.add(value.rightParameterValueData(url, dataStruct));
-		// N parameters generate N testcases, each testcase has a invalid value 
-		dataset.addAll(value.wrongParameterValueData(url, dataStruct));
-		// N parameters generate N testcases, each testcase has a null value
-//		dataset.addAll(nullParameterValueData(url, dataStruct));
+		
+		for (CaseBuilder builder : builders) {
+			try {
+				dataset.addAll((ArrayNode) builder.build(url, dataStruct));
+			} catch (Exception ex) {
+				dataset.add(builder.build(url, dataStruct));
+			}
+		}
 		return dataset;
 	}
 
@@ -125,6 +142,7 @@ public class Generator {
 		}
 		return sb.substring(0, sb.length() - 1);
 	}
+	
 	
 	public static String getType(String url) {
 		int idx = url.indexOf("_");

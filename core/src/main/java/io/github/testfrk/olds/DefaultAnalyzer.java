@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.testfrk.RuleBase;
-import io.github.testfrk.values.AbstractValueGenerator;
+import io.github.testfrk.values.AbstractValue;
 
 /**
  * 
@@ -25,7 +25,7 @@ public class DefaultAnalyzer extends Analyzer {
 		super(pkgName);
 	}
 
-	public DefaultAnalyzer(AbstractValueGenerator valueGenerator, String pkgName) throws Exception {
+	public DefaultAnalyzer(AbstractValue valueGenerator, String pkgName) throws Exception {
 		super(valueGenerator, pkgName);
 	}
 

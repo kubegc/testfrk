@@ -66,7 +66,7 @@ public class UserController {
 		@Min(0) @Max(100)
 		protected Integer age;
 		
-		@Length(max = 10, min = 2)
+		@Length(max = 10)
 		protected String note;
 		
 		public String getNote() {

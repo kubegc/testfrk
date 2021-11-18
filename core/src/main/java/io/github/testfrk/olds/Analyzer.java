@@ -18,8 +18,8 @@ import io.github.testfrk.Extractor;
 import io.github.testfrk.Recorder;
 import io.github.testfrk.RuleBase;
 import io.github.testfrk.Scanner;
-import io.github.testfrk.values.AbstractValueGenerator;
-import io.github.testfrk.values.DefaultValueGenerator;
+import io.github.testfrk.values.AbstractValue;
+import io.github.testfrk.values.DefaultValue;
 
 /**
  * 
@@ -31,7 +31,7 @@ public abstract class Analyzer {
 	/**
 	 * value
 	 */
-	protected final AbstractValueGenerator valueUtil;
+	protected final AbstractValue valueUtil;
 	
 	/**
 	 * pkgName
@@ -43,7 +43,7 @@ public abstract class Analyzer {
 	 * @throws Exception
 	 */
 	public Analyzer(String pkgName) throws Exception {
-		this(new DefaultValueGenerator(), pkgName);
+		this(new DefaultValue(), pkgName);
 	}
 	
 	/**
@@ -51,7 +51,7 @@ public abstract class Analyzer {
 	 * @param pkgName
 	 * @throws Exception
 	 */
-	public Analyzer(AbstractValueGenerator valueGenerator, String pkgName) throws Exception {
+	public Analyzer(AbstractValue valueGenerator, String pkgName) throws Exception {
 		this.valueUtil = valueGenerator;
 		this.pkgName   = pkgName;
 		Recorder.record(Extractor.extract(
@@ -123,8 +123,8 @@ public abstract class Analyzer {
 				throw new RuntimeException("Unsupport parameters types: list, Set and Map");
 			} else {
 				dataStruct = valueUtil.getObjectValues(
-						DefaultValueGenerator.getOuterClassName(t.getTypeName()), 
-						DefaultValueGenerator.getInnerClassName(t.getTypeName()),
+						DefaultValue.getOuterClassName(t.getTypeName()), 
+						DefaultValue.getInnerClassName(t.getTypeName()),
 						valueUtil.checkObjectParameter(url, m, i));
 			}
 		}
